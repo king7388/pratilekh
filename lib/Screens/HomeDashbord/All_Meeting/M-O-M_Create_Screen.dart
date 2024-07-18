@@ -260,18 +260,7 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Meeting Details:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "Montserrat-Regular",
-                      ),
-                    ),
-                  ),
+
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: RichText(

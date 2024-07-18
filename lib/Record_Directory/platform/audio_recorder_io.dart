@@ -39,8 +39,14 @@ mixin AudioRecorderMixin {
 
   Future<String> _getPath() async {
     final dir = await getApplicationDocumentsDirectory();
+    final pratilekhAudioDir = Directory(p.join(dir.path, 'Pratilekh_Audio_Sample'));
+
+    // Create the folder if it doesn't exist
+    if (!(await pratilekhAudioDir.exists())) {
+      await pratilekhAudioDir.create(recursive: true);
+    }
     return p.join(
-      dir.path,
+      pratilekhAudioDir.path,
       'audio_${DateTime.now().millisecondsSinceEpoch}.wav',
     );
   }

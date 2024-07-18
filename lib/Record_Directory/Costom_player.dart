@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-class AudioPlayer extends StatefulWidget {
+class Costom_Player extends StatefulWidget {
   /// Path from where to play recorded audio
   final String source;
 
@@ -13,18 +13,18 @@ class AudioPlayer extends StatefulWidget {
   /// Setting this to null hides the delete button
   final VoidCallback onDelete;
 
-  const AudioPlayer({
+  const Costom_Player({
     super.key,
     required this.source,
     required this.onDelete,
   });
 
   @override
-  AudioPlayerState createState() => AudioPlayerState();
+  State<Costom_Player> createState() => _Costom_PlayerState();
 }
 
-class AudioPlayerState extends State<AudioPlayer> {
-  static const double _controlSize = 56;
+class _Costom_PlayerState extends State<Costom_Player> {
+  static const double _controlSize = 30;
   static const double _deleteBtnSize = 24;
 
   final _audioPlayer = ap.AudioPlayer()..setReleaseMode(ReleaseMode.stop);
@@ -38,15 +38,15 @@ class AudioPlayerState extends State<AudioPlayer> {
   void initState() {
     _playerStateChangedSubscription =
         _audioPlayer.onPlayerComplete.listen((state) async {
-      await stop();
-    });
+          await stop();
+        });
     _positionChangedSubscription = _audioPlayer.onPositionChanged.listen(
-      (position) => setState(() {
+          (position) => setState(() {
         _position = position;
       }),
     );
     _durationChangedSubscription = _audioPlayer.onDurationChanged.listen(
-      (duration) => setState(() {
+          (duration) => setState(() {
         _duration = duration;
       }),
     );
@@ -67,14 +67,13 @@ class AudioPlayerState extends State<AudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDuration = '${_duration?.inHours}:${(_duration?.inMinutes.remainder(60)).toString().padLeft(2, '0')}:${(_duration?.inSeconds.remainder(60)).toString().padLeft(2, '0')}';
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              mainAxisSize: MainAxisSize.max,
+              //mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 _buildControl(),
@@ -92,7 +91,7 @@ class AudioPlayerState extends State<AudioPlayer> {
                 ),
               ],
             ),
-            Text('${formattedDuration ?? 0.0}'),
+            Text('${_duration ?? 0.0}'),
           ],
         );
       },
@@ -117,7 +116,7 @@ class AudioPlayerState extends State<AudioPlayer> {
         color: color,
         child: InkWell(
           child:
-              SizedBox(width: _controlSize, height: _controlSize, child: icon),
+          SizedBox(width: _controlSize, height: _controlSize, child: icon),
           onTap: () {
             if (_audioPlayer.state == ap.PlayerState.playing) {
               pause();
@@ -144,10 +143,10 @@ class AudioPlayerState extends State<AudioPlayer> {
     width -= _deleteBtnSize;
 
     return SizedBox(
-      width: width,
+      width: 200,
       child: Slider(
-         activeColor: Theme.of(context).primaryColor,
-         inactiveColor: Theme.of(context).colorScheme.secondary,
+        activeColor: Theme.of(context).primaryColor,
+        inactiveColor: Theme.of(context).colorScheme.secondary,
         onChanged: (v) {
           if (duration != null) {
             final position = v * duration.inMilliseconds;

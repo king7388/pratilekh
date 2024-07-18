@@ -1,4 +1,3 @@
-
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +10,8 @@ import 'Add_Meeting_Screen/Add_Meeting_Screen.dart';
 import 'All_Meeting/All_Meeting_Screen.dart';
 import 'All_Meeting/Transcript_Using_Audio.dart';
 import 'All_Meeting/ViewAll_Details.dart';
+import 'Voice_Sample/All_Sample.dart';
+import 'Voice_Sample/Voice_Sample.dart';
 import 'Voice_Transcretion_Screen/Live_Transcreption_Page.dart';
 
 class DashBoard_Screen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _DashBoard_ScreenState extends State<DashBoard_Screen> {
       sideMenu.changePage(currentPageIndex);
     });
   }
+
   var _alertShowing = false;
   var _index = 0;
   @override
@@ -192,12 +194,26 @@ class _DashBoard_ScreenState extends State<DashBoard_Screen> {
                   },
                   icon: const Icon(Icons.supervisor_account),
                 ),
+                // SideMenuItem(
+                //   title: AppString.LiveTrancreption,
+                //   onTap: (index, _) {
+                //     pageController.jumpToPage(index);
+                //   },
+                //   icon: const Icon(Icons.mic),
+                // ),
                 SideMenuItem(
-                  title: AppString.LiveTrancreption,
+                  title: AppString.voiceSample,
                   onTap: (index, _) {
                     pageController.jumpToPage(index);
                   },
                   icon: const Icon(Icons.mic),
+                ),
+                SideMenuItem(
+                  title: AppString.allSample,
+                  onTap: (index, _) {
+                    pageController.jumpToPage(index);
+                  },
+                  icon: const Icon(Icons.headset_mic),
                 ),
               ],
             ),
@@ -217,7 +233,9 @@ class _DashBoard_ScreenState extends State<DashBoard_Screen> {
               children: [
                 Add_Meeting_Screen(),
                 All_Meeting_Screen(),
-                Live_Transcripton_Screen(),
+                // Live_Transcripton_Screen(),
+                Voice_Sample(),
+                All_Sample()
               ],
             ),
           ),

@@ -722,7 +722,7 @@ class _Meeting_DetailsScreenState extends State<Meeting_DetailsScreen> {
               ),
               pw.Row(
                 children: [
-                  pw.Text('Ref co :- ',
+                  pw.Text('Ref co : ',
                       style: pw.TextStyle(
                         color: PdfColors.black,
                         fontSize: 13,
@@ -730,7 +730,7 @@ class _Meeting_DetailsScreenState extends State<Meeting_DetailsScreen> {
                       )),
                   pw.Text(refNo, textAlign: pw.TextAlign.right),
                   pw.Spacer(), // Add a spacer to separate the texts
-                  pw.Text('Meeting Date :- ',
+                  pw.Text('Meeting Date : ',
                       style: pw.TextStyle(
                         color: PdfColors.black,
                         fontSize: 13,
@@ -1141,7 +1141,7 @@ print(response.body);
               //DatabaseHelper.getMeetingDetailsAndRecords(widget.meetingId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else {
@@ -1158,29 +1158,20 @@ print(response.body);
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Meeting Details:',
-                          style: TextStyleForTitle,
-                        ),
+
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: RichText(
                             text: TextSpan(
                               style: DefaultTextStyle.of(context).style,
                               children: <TextSpan>[
-                                const TextSpan(
+                                 TextSpan(
                                   text: 'Meeting Title: ',
-                                  style: TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                    color: Colors
-                                        .blue, // You can change color here
-                                  ),
+                                  style: myBoldBlueStyle,
                                 ),
                                 TextSpan(
                                   text: meetingDetails['title'],
-                                  style: const TextStyle(
-                                    // Your value style here
-                                  ),
+                                  style: myBoldblackStyle
                                 ),
                               ],
                             ),
@@ -1192,19 +1183,13 @@ print(response.body);
                             text: TextSpan(
                               style: DefaultTextStyle.of(context).style,
                               children: <TextSpan>[
-                                const TextSpan(
+                                 TextSpan(
                                   text: 'Meeting Held By : ',
-                                  style: TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                    color: Colors
-                                        .blue, // You can change color here
-                                  ),
+                                  style:myBoldBlueStyle,
                                 ),
                                 TextSpan(
                                   text: meetingDetails['meeting_held'],
-                                  style: const TextStyle(
-                                    // Your value style here
-                                  ),
+                                  style:myBoldblackStyle
                                 ),
                               ],
                             ),
@@ -1219,19 +1204,13 @@ print(response.body);
                                 text: TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: <TextSpan>[
-                                    const TextSpan(
+                                     TextSpan(
                                       text: 'Meeting Code No: ',
-                                      style: TextStyle(
-                                        // fontWeight: FontWeight.bold,
-                                        color: Colors
-                                            .blue, // You can change color here
-                                      ),
+                                      style:myBoldBlueStyle,
                                     ),
                                     TextSpan(
                                       text: meetingDetails['codeNo'],
-                                      style: const TextStyle(
-                                        // Your value style here
-                                      ),
+                                      style: myBoldblackStyle
                                     ),
                                   ],
                                 ),
@@ -1243,19 +1222,13 @@ print(response.body);
                                 text: TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: <TextSpan>[
-                                    const TextSpan(
-                                      text: 'Meeting Date :- ',
-                                      style: TextStyle(
-                                        //fontWeight: FontWeight.bold,
-                                        color: Colors
-                                            .blue, // You can change color here
-                                      ),
+                                     TextSpan(
+                                      text: 'Meeting Date : ',
+                                      style: myBoldBlueStyle,
                                     ),
                                     TextSpan(
                                       text: meetingDetails['meetingDate'],
-                                      style: const TextStyle(
-                                        // Your value style here
-                                      ),
+                                      style: myBoldblackStyle
                                     ),
                                   ],
                                 ),
@@ -1273,13 +1246,9 @@ print(response.body);
                                 text: TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: <TextSpan>[
-                                    const TextSpan(
-                                      text: 'Meeting Member List: ',
-                                      style: TextStyle(
-                                        // fontWeight: FontWeight.bold,
-                                        color: Colors
-                                            .blue, // You can change color here
-                                      ),
+                                     TextSpan(
+                                      text: 'Meeting Member List : ',
+                                      style: myBoldBlueStyle,
                                     ),
                                     ..._buildMemberList(
                                         meetingDetails['memberList']),
@@ -1293,13 +1262,9 @@ print(response.body);
                                 text: TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: <TextSpan>[
-                                    const TextSpan(
-                                      text: 'Invited Member List: ',
-                                      style: TextStyle(
-                                        // fontWeight: FontWeight.bold,
-                                        color: Colors
-                                            .blue, // You can change color here
-                                      ),
+                                     TextSpan(
+                                      text: 'Invited Member List : ',
+                                      style:myBoldBlueStyle,
                                     ),
                                     ..._buildMemberList(
                                         meetingDetails['inviteMemberList']),
@@ -1313,13 +1278,9 @@ print(response.body);
                                 text: TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: <TextSpan>[
-                                    const TextSpan(
-                                      text: 'Copy to  :- ',
-                                      style: TextStyle(
-                                        // fontWeight: FontWeight.bold,
-                                        color: Colors
-                                            .blue, // You can change color here
-                                      ),
+                                     TextSpan(
+                                      text: 'Copy to  : ',
+                                      style: myBoldBlueStyle,
                                     ),
                                     ..._buildMemberList(meetingDetails['copyto']),
                                   ],
@@ -1334,12 +1295,13 @@ print(response.body);
                         // Add more details here...
                         const SizedBox(height: 50),
                         Text(
-                          'Meeting Records:',
+                          'Meeting Records :',
                           style: TextStyleForTitle,
                         ),
                         const Divider(),
                         if (meetingRecords.isEmpty)
-                          const Text('No records found.')
+                          const Text('No records found.',style: TextStyle( fontWeight: FontWeight.bold,
+                            letterSpacing: 1,),)
                         else
                           ListView.builder(
                             shrinkWrap: true,
@@ -2375,9 +2337,7 @@ print(response.body);
         memberSpans.add(
           TextSpan(
             text: '\n\u2022 $member', // Bullet point for each member
-            style: const TextStyle(
-                // Your value style here
-                ),
+            style:myBoldblackStyle
           ),
         );
       }

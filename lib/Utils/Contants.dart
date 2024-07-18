@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppString {
+  static const membername = 'Member Name';
+  static const voiceSample = ' Add Voice Sample';
+  static const allSample = 'All Sample';
   static const Addmeeting = 'Add Meeting';
   static const Allmeeting = 'All Meetings';
   static const LiveTrancreption = 'Live Transcription';
@@ -27,7 +30,7 @@ class AppString {
 
  TextStyle myBoldBlueStyle = const TextStyle(
   fontSize: 15,
-  fontWeight: FontWeight.w400,
+  fontWeight: FontWeight.w600,
   color: Colors.blue,
   decoration: TextDecoration.none,
    fontFamily: "Montserrat-Regular",
@@ -38,7 +41,7 @@ class AppString {
 TextStyle myBoldblackStyle = const TextStyle(
   fontSize: 15,
   color: Colors.black,
-  fontWeight: FontWeight.w200,
+  fontWeight: FontWeight.w400,
   decoration: TextDecoration.none,
   fontFamily: "Montserrat-Regular",
 );
@@ -47,6 +50,7 @@ TextStyle myBoldblackStyle = const TextStyle(
 TextStyle TextStyleForTitle = const TextStyle(
   fontSize: 15,
   color: Colors.blue,
+  letterSpacing: 1,
   fontWeight: FontWeight.bold,
   fontFamily: "Montserrat-Regular",
 );
@@ -54,9 +58,15 @@ TextStyle TextStyleForTitle = const TextStyle(
 
 
 TextStyle TextStyleForhint = const TextStyle(
-  fontSize: 12,
+  fontSize: 13,
   color: Colors.grey,
   fontWeight: FontWeight.bold,
+  fontFamily: "Montserrat-Regular",
+);
+TextStyle TextStyleForVoiceSample = const TextStyle(
+  fontSize: 15,
+  color: Colors.black,
+  //fontWeight: FontWeight.bold,
   fontFamily: "Montserrat-Regular",
 );
 TextStyle TextStyleForDropdown = const TextStyle(

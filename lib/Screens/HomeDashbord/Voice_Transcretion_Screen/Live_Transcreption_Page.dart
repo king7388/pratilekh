@@ -25,20 +25,19 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:pdf/widgets.dart' as pw;
 
-
 class Live_Transcripton_Screen extends StatefulWidget {
   @override
-  State<Live_Transcripton_Screen> createState() => _Live_Transcripton_ScreenState();
+  State<Live_Transcripton_Screen> createState() =>
+      _Live_Transcripton_ScreenState();
 }
 
 class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
-
   bool isChecked1 = false;
   bool isChecked2 = false;
   bool isChecked3 = false;
   bool isChecked4 = false;
   bool isChecked5 = false;
-  bool webshocket=false;
+  bool webshocket = false;
   Map<String, dynamic>? Data;
   String? data;
   bool showPlayer = false;
@@ -71,10 +70,8 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
   }
 
   void sendAudioSingle() async {
-    webshocket=false;
-    setState(() {
-
-    });
+    webshocket = false;
+    setState(() {});
     // Get the path of the audio file if it is not null
     if (audioPath != null) {
       String audioFilePath = audioPath!.path;
@@ -179,10 +176,8 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
   }
 
   void SendAudioMultple() async {
-    webshocket=false;
-    setState(() {
-
-    });
+    webshocket = false;
+    setState(() {});
     // Get the path of the audio file if it is not null
     if (audioPath != null) {
       String audioFilePath = audioPath!.path;
@@ -216,7 +211,7 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
           print('Audio sent successfully');
 
           // Parse the JSON response
-           jsonData = json.decode(response.body);
+          jsonData = json.decode(response.body);
 
           setState(() {
             Data = jsonData;
@@ -245,7 +240,7 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
 
   final List<String> messages = [];
   late Uri wsUrl = Uri.parse('ws://localhost:8765');
-   WebSocketChannel? channel;
+  WebSocketChannel? channel;
 
   // void connectWeb() async {
   //   UI_Componenet.scrollToBottom(_controller);
@@ -278,38 +273,29 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
   void connectWeb() async {
     UI_Componenet.scrollToBottom(_controller);
     if (isWebSocketConnected) {
-      Utils.isloading=true;
-      setState(() {
-
+      Utils.isloading = true;
+      setState(() {});
+      channel!.stream.listen((message) {
+        if (!mounted) return; // Check if the widget is still mounted
+        setState(() {
+          webshocket = true;
+        });
       });
-     channel!.stream.listen((message) {
-       if (!mounted) return; // Check if the widget is still mounted
-       setState(() {
-
-         webshocket=true;
-
-       });
-
-     });
-        webshocket = true;
+      webshocket = true;
       print(messages);
-      Utils.isloading=false;
-      setState(() {
-
-      });
+      Utils.isloading = false;
+      setState(() {});
     } else {
-      Utils.isloading=true;
-      setState(() {
-
-      });
+      Utils.isloading = true;
+      setState(() {});
       channel = IOWebSocketChannel.connect(wsUrl);
       channel!.stream.listen(
-            (message) {
+        (message) {
           if (!mounted) return; // Check if the widget is still mounted
-            messages.add(message);
-            webshocket=true;
+          messages.add(message);
+          webshocket = true;
           print(messages);
-          Utils.isloading=false;
+          Utils.isloading = false;
           setState(() {});
         },
         onError: (error) {
@@ -320,18 +306,14 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
           // Handle close event
           print('WebSocket closed');
 
-          Utils.isloading=false;
+          Utils.isloading = false;
           isWebSocketConnected = false; // Reset connection flag
-          setState(() {
-
-          });
+          setState(() {});
         },
       );
       isWebSocketConnected = true; // Set connection flag
     }
   }
-
-
 
   void disconnectWeb() {
     if (channel != null && channel!.sink != null) {
@@ -347,16 +329,14 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
     }
   }
 
-
   // void disconnectWeb() {
   //   final wsUrl = Uri.parse('ws://localhost:8080');
   //   final channel = WebSocketChannel.connect(wsUrl);
   //   channel.sink.close(status.goingAway);
   // }
 
-
-
   List<dynamic>? worldfiledata;
+
   ///
 
   ///
@@ -388,7 +368,6 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
       }
 
       if (isChecked3 == true) {
-
         // Save each speaker's messages to a separate file
         for (String speaker in speakerMessages.keys) {
           // Create directory for each speaker
@@ -399,8 +378,7 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
           File file = File('$speakerFolderPath/messages.txt');
           await file.writeAsString(speakerMessages[speaker]!.join('\n'));
         }
-      }
-      else if (isChecked3 == false) {
+      } else if (isChecked3 == false) {
         List<String> data = [];
         // Handle the response data as needed
         if (jsonData['messages'] != null) {
@@ -457,93 +435,94 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
     );
   }
 
-  Future<void> _handleResponseDataAndSaveAsPdf(Map<String, dynamic> jsonData) async {
+  Future<void> _handleResponseDataAndSaveAsPdf(
+      Map<String, dynamic> jsonData) async {
     // Extract messages from JSON data
     List<dynamic> messages = jsonData['messages'];
-    if(isChecked3==false){
-
+    if (isChecked3 == false) {
       List<String> allMessages = [];
 
-    // Combine all messages into a single list
-    for (var message in messages) {
-      if (message['speaker'] != null &&
-          message['text'] != null &&
-          message['time'] != null) {
-        String messageText = '${message['speaker']} (${message['time']}): ${message['text']}';
-        allMessages.add(messageText);
+      // Combine all messages into a single list
+      for (var message in messages) {
+        if (message['speaker'] != null &&
+            message['text'] != null &&
+            message['time'] != null) {
+          String messageText =
+              '${message['speaker']} (${message['time']}): ${message['text']}';
+          allMessages.add(messageText);
+        }
       }
-    }
 
-    // Generate a unique folder name based on the current timestamp
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    final folderName = 'messages_$timestamp';
+      // Generate a unique folder name based on the current timestamp
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final folderName = 'messages_$timestamp';
 
-    // Get the directory for saving the PDF
-    final Directory? documentsDirectory = await getDownloadsDirectory();
-    final String? documentsPath = documentsDirectory?.path;
-    final folderPath = '$documentsPath/$folderName';
+      // Get the directory for saving the PDF
+      final Directory? documentsDirectory = await getDownloadsDirectory();
+      final String? documentsPath = documentsDirectory?.path;
+      final folderPath = '$documentsPath/$folderName';
 
-    // Create a directory for saving the PDF files
-    final folder = Directory(folderPath);
-    await folder.create();
+      // Create a directory for saving the PDF files
+      final folder = Directory(folderPath);
+      await folder.create();
 
-    // Save all messages in a single PDF file
-    final pdf = pw.Document();
+      // Save all messages in a single PDF file
+      final pdf = pw.Document();
 
-    // Add pages to the PDF for all messages
-    for (int i = 0; i < allMessages.length; i += 40) {
-      final pageMessages = allMessages.sublist(i, i + 40 < allMessages.length ? i + 40 : allMessages.length);
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Expanded(
-                  child: pw.Text(pageMessages.join('\n')),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    }
-
-    // Generate a unique filename for the PDF file
-    final pdfFilename = 'all_messages.pdf';
-    final pdfFilePath = '$folderPath/$pdfFilename';
-
-    // Save the PDF to a file
-    final pdfFile = File(pdfFilePath);
-    await pdfFile.writeAsBytes(await pdf.save());
-
-    // Show a pop-up displaying the folder's path
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('PDFs Saved'),
-          content: Text('PDFs saved to: $folderPath'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () async {
-                // Open folder in file explorer
-                await Process.run('explorer.exe', [folderPath]);
-              },
-              child: Text('Open Folder'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
+      // Add pages to the PDF for all messages
+      for (int i = 0; i < allMessages.length; i += 40) {
+        final pageMessages = allMessages.sublist(
+            i, i + 40 < allMessages.length ? i + 40 : allMessages.length);
+        pdf.addPage(
+          pw.Page(
+            build: (pw.Context context) {
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(pageMessages.join('\n')),
+                  ),
+                ],
+              );
+            },
+          ),
         );
-      },
-    );
-    }
-    else if(isChecked3==true){
+      }
+
+      // Generate a unique filename for the PDF file
+      final pdfFilename = 'all_messages.pdf';
+      final pdfFilePath = '$folderPath/$pdfFilename';
+
+      // Save the PDF to a file
+      final pdfFile = File(pdfFilePath);
+      await pdfFile.writeAsBytes(await pdf.save());
+
+      // Show a pop-up displaying the folder's path
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('PDFs Saved'),
+            content: Text('PDFs saved to: $folderPath'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () async {
+                  // Open folder in file explorer
+                  await Process.run('explorer.exe', [folderPath]);
+                },
+                child: Text('Open Folder'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else if (isChecked3 == true) {
       Map<String, List<String>> speakerMessages = {};
 
       // Generate a unique folder name based on the current timestamp
@@ -570,7 +549,8 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
           if (!speakerMessages.containsKey(speaker)) {
             speakerMessages[speaker] = [];
           }
-          speakerMessages[speaker]!.add('${message['speaker']} (${message['time']}): ${message['text']}');
+          speakerMessages[speaker]!.add(
+              '${message['speaker']} (${message['time']}): ${message['text']}');
         }
       }
 
@@ -583,15 +563,19 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
 
         // Add pages to the PDF for each speaker's messages
         for (int i = 0; i < messages.length; i += 20) {
-          final pageMessages = messages.sublist(i, i + 20 < messages.length ? i + 20 : messages.length);
+          final pageMessages = messages.sublist(
+              i, i + 20 < messages.length ? i + 20 : messages.length);
           pdf.addPage(
             pw.Page(
               build: (pw.Context context) {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(speaker, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    pw.SizedBox(height: 5), // Add space between speaker name and messages
+                    pw.Text(speaker,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(
+                        height:
+                            5), // Add space between speaker name and messages
                     pw.Expanded(
                       child: pw.Text(pageMessages.join('\n')),
                     ),
@@ -609,8 +593,7 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
         // Save the PDF to a file
         final pdfFile = File(pdfFilePath);
         await pdfFile.writeAsBytes(await pdf.save());
-
-        }
+      }
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -635,10 +618,9 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
           );
         },
       );
-      }
-
+    }
   }
- 
+
   List<Widget> _buildSpeakerTextFields(Map<String, dynamic>? Data) {
     List<Widget> textFields = [];
     Map<String, TextEditingController> textEditingControllers = {};
@@ -674,11 +656,10 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
                   Spacer(),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.3,
-                    height: MediaQuery.of(context).size.height*0.06,
+                    height: MediaQuery.of(context).size.height * 0.06,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
-
                         style: const TextStyle(
                           // Customize the text style for the entered text
                           color: Colors.black, // Change color to black
@@ -777,18 +758,20 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
       if (response.statusCode == 200) {
         var responseBody = json.decode(response.body);
         print('Response from server: $responseBody');
-        if(responseBody['message']==true){
+        if (responseBody['message'] == true) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text('Word File  Saved'),
-                content: Text('Word File  saved to: ${responseBody['file_path']}'),
+                content:
+                    Text('Word File  saved to: ${responseBody['file_path']}'),
                 actions: <Widget>[
                   ElevatedButton(
                     onPressed: () async {
                       // Open folder in file explorer
-                      await Process.run('explorer.exe', [responseBody['file_path']]);
+                      await Process.run(
+                          'explorer.exe', [responseBody['file_path']]);
                     },
                     child: Text('Open Folder'),
                   ),
@@ -802,13 +785,13 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
               );
             },
           );
-        }else{
+        } else {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: const Text('Something went wrong.....'),
-               // content: Text('PDFs saved to: ${responseBody['file_path']}'),
+                // content: Text('PDFs saved to: ${responseBody['file_path']}'),
                 actions: <Widget>[
                   ElevatedButton(
                     onPressed: () {
@@ -867,16 +850,26 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
                           }
                         },
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith<Color>(
+                                  (states) {
                             if (states.contains(MaterialState.pressed)) {
                               // When button is pressed
-                              return isWebSocketConnected ? Colors.red.shade700 : Colors.green.shade700;
+                              return isWebSocketConnected
+                                  ? Colors.red.shade700
+                                  : Colors.green.shade700;
                             }
                             // Default color
-                            return isWebSocketConnected ? Colors.red : Colors.green;
+                            return isWebSocketConnected
+                                ? Colors.red
+                                : Colors.green;
                           }),
                         ),
-                        child: Text(isWebSocketConnected ? 'Stop Record' : 'Start Record', style: TextStyle(color: Colors.white)),
+                        child: Text(
+                            isWebSocketConnected
+                                ? 'Stop Record'
+                                : 'Start Record',
+                            style: TextStyle(color: Colors.white)),
                       ),
                       if (Utils.isloading)
                         Positioned.fill(
@@ -898,7 +891,8 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
                 ],
               ),
             ),
-            if (isChecked3 == true || isChecked2==true) ..._buildSpeakerTextFields(Data),
+            if (isChecked3 == true || isChecked2 == true)
+              ..._buildSpeakerTextFields(Data),
             const Padding(
               padding: EdgeInsets.only(top: 28.0),
               child: Text(
@@ -910,9 +904,9 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
                     fontFamily: "Montserrat-Regular"),
               ),
             ),
-            if(webshocket==false)
-            UI_Componenet.Costom_Container_output(context, Data),
-            if(webshocket==true)
+            if (webshocket == false)
+              UI_Componenet.Costom_Container_output(context, Data),
+            if (webshocket == true)
               // StreamBuilder(
               //   stream: channel!.stream,
               //   builder: (context, snapshot) {
@@ -958,31 +952,35 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
               //     }
               //   },
               // ),
-            UI_Componenet.Costom_Webshocekt_Ui(context, messages.toString()),
-            if (isChecked3 == true || isChecked2==true)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 700.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ElevatedButton(onPressed: () {
-                    if (jsonData['messages'] != null) {
-                      _handleResponseDataAndSaveAsPdf(jsonData);
-                    }
-                  }, child: Text('Save As PDF')),
-                  ElevatedButton(onPressed: () {
-                    sendDatatoSaveInWorldFile();
-                  }, child: Text('Save As Word')),
-                  ElevatedButton(
-                      onPressed: () {
+              UI_Componenet.Costom_Webshocekt_Ui(context, messages.toString()),
+            if (isChecked3 == true || isChecked2 == true)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 700.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          if (jsonData['messages'] != null) {
+                            _handleResponseDataAndSaveAsPdf(jsonData);
+                          }
+                        },
+                        child: Text('Save As PDF')),
+                    ElevatedButton(
+                        onPressed: () {
+                          sendDatatoSaveInWorldFile();
+                        },
+                        child: Text('Save As Word')),
+                    ElevatedButton(
+                        onPressed: () {
                           if (jsonData['messages'] != null) {
                             _saveMessages(jsonData);
-                        }
-                      },
-                      child: Text('Save As TXT')),
-                ],
+                          }
+                        },
+                        child: Text('Save As TXT')),
+                  ],
+                ),
               ),
-            ),
             const SizedBox(
               height: 100,
             )
@@ -992,8 +990,3 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
     );
   }
 }
-
-
-
-
-

@@ -15,56 +15,151 @@ class DatabaseHelper {
   }
 
   static Future<void> initDatabase() async {
+    // Initialize sqflite_ffi and set the database factory
     sqfliteFfiInit();
-    // Set the database factory to use sqflite_common_ffi
     sqflite_ffi.databaseFactory = databaseFactoryFfi;
 
     // Get the path for storing the database file
     var databasesPath = await getDatabasesPath();
     final path = join(databasesPath, 'meeting_database.db');
 
-    // Create and open the database
-    _database = await openDatabase(
-      path,
-      onCreate: (db, version) async {
-        // Create the meetings table
-        await db.execute('''
-        CREATE TABLE meetings (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          meeting_id TEXT,
-          title TEXT,
-          codeNo TEXT,
-          meeting_held TEXT,
-          memberList TEXT,
-          inviteMemberList TEXT,
-          meetingDate TEXT,
-          copyto TEXT
-        )
-      ''');
+    try {
+      // Open the database
+      _database = await openDatabase(
+        path,
+        onCreate: (db, version) async {
+          // Create the meetings table
+          await db.execute('''
+            CREATE TABLE meetings (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              meeting_id TEXT,
+              title TEXT,
+              codeNo TEXT,
+              meeting_held TEXT,
+              memberList TEXT,
+              inviteMemberList TEXT,
+              meetingDate TEXT,
+              copyto TEXT
+            )
+          ''');
 
-        // Create the meeting_records table
-        await db.execute('''
-        CREATE TABLE meeting_records (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          meeting_id TEXT,
-          input_source TEXT,
-          processed_date TEXT, 
-          p1 INTEGER DEFAULT 0,
-          p2 INTEGER DEFAULT 0,
-          p3 INTEGER DEFAULT 0,
-          o1 TEXT,
-          o2 TEXT,
-          o3 TEXT,
-          m_o_m TEXT
-        )
-      ''');
-      },
-      version: 1,
-    );
+          // Create the meeting_records table
+          await db.execute('''
+            CREATE TABLE meeting_records (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              meeting_id TEXT,
+              input_source TEXT,
+              processed_date TEXT, 
+              p1 INTEGER DEFAULT 0,
+              p2 INTEGER DEFAULT 0,
+              p3 INTEGER DEFAULT 0,
+              o1 TEXT,
+              o2 TEXT,
+              o3 TEXT,
+              m_o_m TEXT
+            )
+          ''');
+
+          // Create the members table with unique name constraint
+          await db.execute('''
+            CREATE TABLE members (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT UNIQUE,
+              folder_name TEXT
+            )
+          ''');
+        },
+        version: 1,
+      );
+      print('Database initialized');
+    } catch (e) {
+      print('Error initializing database: $e');
+      // Handle initialization error, e.g., log it or throw an exception
+      throw Exception('Failed to initialize database: $e');
+    }
+  }
+  static Future<List<Map<String, dynamic>>> getAllMembers() async {
+    try {
+      if (_database == null) {
+        await initDatabase();
+      }
+      return await _database.query('members');
+    } catch (e) {
+      print('Error fetching members: $e');
+      return [];
+    }
+  }
+  static Future<bool> deleteMember(int id) async {
+    try {
+      if (_database == null) {
+        await initDatabase();
+      }
+      int result = await _database.delete(
+        'members',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      if (result > 0) {
+        print('Member with id $id deleted successfully');
+        return true;
+      } else {
+        print('No member found with id $id');
+        return false;
+      }
+    } catch (e) {
+      print('Error deleting member: $e');
+      return false;
+    }
   }
 
 
-  static Future<List<String>> getColumns(String tableName) async {
+  static Future<bool> CheckinsertMember(String name, String folderName) async {
+    try{
+      // Ensure the database is initialized
+      if (_database == null) {
+        await initDatabase();
+      }
+
+      // Check if the record already exists
+      final existingRecords = await _database.query(
+        'members',
+        where: 'name = ? AND folder_name = ?',
+        whereArgs: [name, folderName],
+      );
+      if (existingRecords.isNotEmpty) {
+        // Record already exists
+        print('Record with name $name and folderName $folderName already exists.');
+        return false; // Return false indicating insertion failed
+      }else{
+        return true;
+      }
+    }catch(e){
+      return false;
+    }
+  }
+  static Future<bool> insertMember(String name, String folderName) async {
+    try {
+        // Insert the record
+        await _database.insert(
+          'members',
+          {
+            'name': name,
+            'folder_name': folderName,
+          },
+          conflictAlgorithm: ConflictAlgorithm.fail, // Ensure failure on conflict
+        );
+        print('Insert successful');
+        return true; // Return true indicating insertion succeeded
+
+    } catch (e) {
+      // Handle SQLiteConstraintException: UNIQUE constraint failed
+      print('Insert failed: $e');
+      return false; // Return false indicating insertion failed
+    }
+  }
+
+
+static Future<List<String>> getColumns(String tableName) async {
     // Query the PRAGMA statement to get column information
     final List<Map<String, dynamic>> columns = await _database.rawQuery(
       "PRAGMA table_info($tableName);",
@@ -123,7 +218,7 @@ class DatabaseHelper {
       String inviteMemberListJson = jsonEncode(inviteMemberList);
       String copytoJson = jsonEncode(copyto);
 
-      // Insert data into the database  
+      // Insert data into the database
       await _database.insert('meetings', {
         'meeting_id': meetingID,
         'title': title,
@@ -141,6 +236,14 @@ class DatabaseHelper {
 
       return null;
     }
+  }
+ static Future<List<Map<String, dynamic>>> getMeetingDataById(String meetingID) async {
+    List<Map<String, dynamic>> results = await _database.query(
+      'meetings',
+      where: 'meeting_id = ?',
+      whereArgs: [meetingID],
+    );
+    return results;
   }
 
   static Future<String?> updateMeeting({

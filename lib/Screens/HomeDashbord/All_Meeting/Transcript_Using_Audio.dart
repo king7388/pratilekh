@@ -22,24 +22,25 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../../../Utils/Utils.dart';
 
-
-
 /// Large Screen
 class Voice_Transcreption_For_Audio extends StatefulWidget {
   var meeting_id;
-   Voice_Transcreption_For_Audio({Key? key, required this.meeting_id}) : super(key: key);
+  Voice_Transcreption_For_Audio({Key? key, required this.meeting_id})
+      : super(key: key);
 
   @override
-  State<Voice_Transcreption_For_Audio> createState() => _Voice_Transcreption_For_AudioState();
+  State<Voice_Transcreption_For_Audio> createState() =>
+      _Voice_Transcreption_For_AudioState();
 }
 
-class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_Audio> {
+class _Voice_Transcreption_For_AudioState
+    extends State<Voice_Transcreption_For_Audio> {
   bool isChecked1 = false;
   bool isChecked2 = false;
   bool isChecked3 = false;
   bool isChecked4 = false;
   bool isChecked5 = false;
-  bool webshocket=false;
+  bool webshocket = false;
   Map<String, dynamic>? Data;
   String? data;
   bool showPlayer = false;
@@ -47,6 +48,11 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
   Map<String, dynamic> jsonData = {};
   ScrollController _controller = ScrollController();
   Future<void> pickAudio() async {
+    audioPath = null;
+    showPlayer = false;
+    setState(() {
+
+    });
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: [
@@ -63,6 +69,11 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
     if (result != null) {
       setState(() {
         audioPath = File(result.files.single.path!);
+        print(audioPath);
+        setState(() {
+
+        });
+        showPlayer = true;
       });
     } else {
       // User canceled the picker
@@ -70,12 +81,11 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
   }
 
   void sendAudioSingle() async {
-    String currentDate = DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+    String currentDate =
+        DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
 
-    webshocket=false;
-    setState(() {
-
-    });
+    webshocket = false;
+    setState(() {});
     // Get the path of the audio file if it is not null
     if (audioPath != null) {
       String audioFilePath = audioPath!.path;
@@ -103,11 +113,7 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
         // Read response from stream
         var response = await http.Response.fromStream(streamedResponse);
 
-
-
         if (response.statusCode == 200) {
-
-
           // Parse the JSON response
           var jsonData = json.decode(response.body);
 
@@ -120,12 +126,22 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
           if (jsonData['result'] != null) {
             data.add(jsonData['result']);
           }
-          DatabaseHelper.insertMeetingRecord(widget.meeting_id, audioFilePath,isChecked1,isChecked2,isChecked3,data.toString(),null,null,null,currentDate);
+          DatabaseHelper.insertMeetingRecord(
+              widget.meeting_id,
+              audioFilePath,
+              isChecked1,
+              isChecked2,
+              isChecked3,
+              data.toString(),
+              null,
+              null,
+              null,
+              currentDate);
           // Generate a unique filename
           final folderName = 'Pratilekh_TXT_Files';
           final downloadsDirectory = await getDownloadsDirectory();
-          final folderPath = '${downloadsDirectory?.path}\\Pratilekh\\$folderName';
-
+          final folderPath =
+              '${downloadsDirectory?.path}\\Pratilekh\\$folderName';
 
           String filename =
               '_audio_${DateTime.now().millisecondsSinceEpoch.toString()}.txt';
@@ -135,7 +151,7 @@ class _Voice_Transcreption_For_AudioState extends State<Voice_Transcreption_For_
           // Write the response body to a file
           File file = File('$folderPath\\$filename');
           await file.writeAsString(data.join('\n'));
-print(file.path);
+          print(file.path);
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -151,7 +167,6 @@ print(file.path);
                   ),
                   ElevatedButton(
                     onPressed: () {
-
                       Navigator.of(context).pop();
                     },
                     child: Text('OK'),
@@ -160,8 +175,7 @@ print(file.path);
               );
             },
           );
-        }
-        else {
+        } else {
           Utils.isloading = false;
           setState(() {});
 
@@ -172,28 +186,29 @@ print(file.path);
         Utils.isloading = false;
         setState(() {});
         return UI_Componenet.showError(context, '${e.toString()}');
-
       }
     } else {
       return UI_Componenet.showAudio(
           context, 'Please select Audio File to proceed');
-
     }
   }
 
   void SendAudioMultple() async {
-    String currentDate = DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
-    webshocket=false;
-    setState(() {
-
-    });
+    String currentDate =
+        DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+    webshocket = false;
+    setState(() {});
     // Get the path of the audio file if it is not null
     if (audioPath != null) {
       String audioFilePath = audioPath!.path;
+
+      final newDirectory = Directory('${pratlekhpath}\\Voice_Sample');
+      if (!await newDirectory.exists()) {
+        await newDirectory.create(recursive: true);
+      }
       // Create a multipart request
       var request = http.MultipartRequest(
           'POST', Uri.parse('http://127.0.0.1:5000/process_audio_speaker'));
-
       // Add the audio file to the request
       request.files
           .add(await http.MultipartFile.fromPath('audio', audioFilePath));
@@ -202,6 +217,9 @@ print(file.path);
       //request.fields['single_speaker'] = isChecked1.toString(); // Replace 'true' with the actual state of button 1
       request.fields['multiple_speaker'] = isChecked2
           .toString(); // Replace 'false' with the actual state of button 2
+      request.fields['audio_segment_dir'] = newDirectory
+          .path; // Replace 'false' with the actual state of button 2
+      request.fields['all_folder_names'] = Allmembername!;
       // Send the request
       try {
         Utils.isloading = true;
@@ -211,40 +229,44 @@ print(file.path);
 
         // Read response from stream
         var response = await http.Response.fromStream(streamedResponse);
-
-
-
         if (response.statusCode == 200) {
           Utils.isloading = false;
 
           // Parse the JSON response
           jsonData = json.decode(response.body);
-var databasedata;
+          var databasedata;
 
           setState(() {
             Data = jsonData;
-            databasedata=json.encode(Data);
+            databasedata = json.encode(Data);
           });
 
-          DatabaseHelper.insertMeetingRecord(widget.meeting_id, audioFilePath,isChecked1,isChecked2,isChecked3,null,databasedata.toString(),null,null,currentDate);
+          DatabaseHelper.insertMeetingRecord(
+              widget.meeting_id,
+              audioFilePath,
+              isChecked1,
+              isChecked2,
+              isChecked3,
+              null,
+              databasedata.toString(),
+              null,
+              null,
+              currentDate);
           setState(() {});
         } else {
           Utils.isloading = false;
           setState(() {});
           return UI_Componenet.showError(
               context, '${response.body.toString()}');
-
         }
       } catch (e) {
         Utils.isloading = false;
         setState(() {});
         return UI_Componenet.showError(context, "${e.toString()}");
-
       }
     } else {
       return UI_Componenet.showAudio(
           context, 'Please select Audio File to proceed');
-
     }
   }
 
@@ -261,12 +283,9 @@ var databasedata;
 
     Directory directory = Directory(folderPath);
     if (await directory.exists()) {
-
     } else {
       // If directory doesn't exist, create it
-      directory.create(recursive: true).then((Directory directory) {
-
-      });
+      directory.create(recursive: true).then((Directory directory) {});
     }
     String speakersFolderPath =
         '$folderPath\\speakers${DateTime.now().millisecondsSinceEpoch.toString()}';
@@ -292,7 +311,6 @@ var databasedata;
       }
 
       if (isChecked3 == true) {
-
         // Save each speaker's messages to a separate file
         for (String speaker in speakerMessages.keys) {
           // Create directory for each speaker
@@ -303,8 +321,7 @@ var databasedata;
           File file = File('$speakerFolderPath\\messages.txt');
           await file.writeAsString(speakerMessages[speaker]!.join('\n'));
         }
-      }
-      else if (isChecked3 == false) {
+      } else if (isChecked3 == false) {
         List<String> data = [];
         // Handle the response data as needed
         if (jsonData['messages'] != null) {
@@ -361,11 +378,11 @@ var databasedata;
     );
   }
 
-  Future<void> _handleResponseDataAndSaveAsPdf(Map<String, dynamic> jsonData) async {
+  Future<void> _handleResponseDataAndSaveAsPdf(
+      Map<String, dynamic> jsonData) async {
     // Extract messages from JSON data
     List<dynamic> messages = jsonData['messages'];
-    if(isChecked3==false){
-
+    if (isChecked3 == false) {
       List<String> allMessages = [];
 
       // Combine all messages into a single list
@@ -373,7 +390,8 @@ var databasedata;
         if (message['speaker'] != null &&
             message['text'] != null &&
             message['time'] != null) {
-          String messageText = '${message['speaker']} (${message['time']}): ${message['text']}';
+          String messageText =
+              '${message['speaker']} (${message['time']}): ${message['text']}';
           allMessages.add(messageText);
         }
       }
@@ -386,12 +404,9 @@ var databasedata;
 
       Directory directory = Directory(folderPath);
       if (await directory.exists()) {
-
       } else {
         // If directory doesn't exist, create it
-        directory.create(recursive: true).then((Directory directory) {
-
-        });
+        directory.create(recursive: true).then((Directory directory) {});
       }
       // Create a directory for saving the PDF files
       final folder = Directory(folderPath);
@@ -402,7 +417,8 @@ var databasedata;
 
       // Add pages to the PDF for all messages
       for (int i = 0; i < allMessages.length; i += 40) {
-        final pageMessages = allMessages.sublist(i, i + 40 < allMessages.length ? i + 40 : allMessages.length);
+        final pageMessages = allMessages.sublist(
+            i, i + 40 < allMessages.length ? i + 40 : allMessages.length);
         pdf.addPage(
           pw.Page(
             build: (pw.Context context) {
@@ -452,24 +468,21 @@ var databasedata;
           );
         },
       );
-    }
-    else if(isChecked3==true){
+    } else if (isChecked3 == true) {
       Map<String, List<String>> speakerMessages = {};
 
       // Generate a unique folder name based on the current timestamp
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       final folderName = 'Pratilekh_PDF_Files';
       final downloadsDirectory = await getDownloadsDirectory();
-      final folderPath = '${downloadsDirectory?.path}\\Pratilekh\\$folderName\\Speaker_wise_Data_$timestamp';
+      final folderPath =
+          '${downloadsDirectory?.path}\\Pratilekh\\$folderName\\Speaker_wise_Data_$timestamp';
 
       Directory directory = Directory(folderPath);
       if (await directory.exists()) {
-
       } else {
         // If directory doesn't exist, create it
-        directory.create(recursive: true).then((Directory directory) {
-
-        });
+        directory.create(recursive: true).then((Directory directory) {});
       }
       // Create a directory for saving the PDF files
       final folder = Directory(folderPath);
@@ -488,7 +501,8 @@ var databasedata;
           if (!speakerMessages.containsKey(speaker)) {
             speakerMessages[speaker] = [];
           }
-          speakerMessages[speaker]!.add('${message['speaker']} (${message['time']}): ${message['text']}');
+          speakerMessages[speaker]!.add(
+              '${message['speaker']} (${message['time']}): ${message['text']}');
         }
       }
 
@@ -501,15 +515,19 @@ var databasedata;
 
         // Add pages to the PDF for each speaker's messages
         for (int i = 0; i < messages.length; i += 20) {
-          final pageMessages = messages.sublist(i, i + 20 < messages.length ? i + 20 : messages.length);
+          final pageMessages = messages.sublist(
+              i, i + 20 < messages.length ? i + 20 : messages.length);
           pdf.addPage(
             pw.Page(
               build: (pw.Context context) {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(speaker, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    pw.SizedBox(height: 5), // Add space between speaker name and messages
+                    pw.Text(speaker,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(
+                        height:
+                            5), // Add space between speaker name and messages
                     pw.Expanded(
                       child: pw.Text(pageMessages.join('\n')),
                     ),
@@ -527,7 +545,6 @@ var databasedata;
         // Save the PDF to a file
         final pdfFile = File(pdfFilePath);
         await pdfFile.writeAsBytes(await pdf.save());
-
       }
       showDialog(
         context: context,
@@ -554,7 +571,6 @@ var databasedata;
         },
       );
     }
-
   }
 
   List<Widget> _buildSpeakerTextFields(Map<String, dynamic>? Data) {
@@ -582,21 +598,23 @@ var databasedata;
             textFields.add(
               Row(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Speaker: $speaker',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  SizedBox(
+                    width: 200,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Speaker: $speaker',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   Spacer(),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.3,
-                    height: MediaQuery.of(context).size.height*0.06,
+                    height: MediaQuery.of(context).size.height * 0.06,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
-
                         style: const TextStyle(
                           // Customize the text style for the entered text
                           color: Colors.black, // Change color to black
@@ -629,7 +647,8 @@ var databasedata;
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                String currentDate = DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+                String currentDate =
+                    DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
                 // Save changes made to speaker names
                 Data['messages'].forEach((message) {
                   String oldSpeaker = message['speaker'];
@@ -640,10 +659,20 @@ var databasedata;
                 // Convert the modified Data to JSON
                 worldfiledata = Data['messages'];
                 var dbdata;
-setState(() {
-   dbdata=json.encode(Data);
-});
-                DatabaseHelper.insertMeetingRecord(widget.meeting_id,audioPath!.path,isChecked1,isChecked2,isChecked3,null,dbdata.toString(),null,null,currentDate);
+                setState(() {
+                  dbdata = json.encode(Data);
+                });
+                DatabaseHelper.insertMeetingRecord(
+                    widget.meeting_id,
+                    audioPath!.path,
+                    isChecked1,
+                    isChecked2,
+                    isChecked3,
+                    null,
+                    dbdata.toString(),
+                    null,
+                    null,
+                    currentDate);
                 // Call setState to update the UI
                 setState(() {});
               },
@@ -680,7 +709,6 @@ setState(() {
     ];
   }
 
-
   Future<void> sendDatatoSaveInWorldFile() async {
     try {
       //List<dynamic> messages = Data?['messages'];
@@ -701,18 +729,20 @@ setState(() {
       if (response.statusCode == 200) {
         var responseBody = json.decode(response.body);
 
-        if(responseBody['message']==true){
+        if (responseBody['message'] == true) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text('Word File  Saved'),
-                content: Text('Word File  saved to: ${responseBody['file_path']}'),
+                content:
+                    Text('Word File  saved to: ${responseBody['file_path']}'),
                 actions: <Widget>[
                   ElevatedButton(
                     onPressed: () async {
                       // Open folder in file explorer
-                      await Process.run('explorer.exe', [responseBody['file_path']]);
+                      await Process.run(
+                          'explorer.exe', [responseBody['file_path']]);
                     },
                     child: Text('Open '),
                   ),
@@ -726,7 +756,7 @@ setState(() {
               );
             },
           );
-        }else{
+        } else {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -745,26 +775,76 @@ setState(() {
             },
           );
         }
+      } else {}
+    } catch (e) {}
+  }
 
+  String? Allmembername;
+  String? pratlekhpath;
+  Future<Directory?> getDirectory(String directoryPath) async {
+    final Directory dir = Directory(directoryPath);
 
-      } else {
-
-      }
-    } catch (e) {
-
+    if (await dir.exists()) {
+      //  print('Directory exists: ${dir.path}');
+      setState(() {
+        pratlekhpath = dir.path;
+      });
+      return dir;
+    } else {
+      //print('Directory does not exist');
+      return null;
     }
   }
-@override
+  @override
   void initState() {
-  Utils.isloading = false;
+    getDirectory('C:\\Pratilekh');
+    Utils.isloading = false;
     // TODO: implement initState
+
     super.initState();
+
+    fetchMeetingData(widget.meeting_id);
   }
+
+  void fetchMeetingData(String meetingID) async {
+    List<Map<String, dynamic>> meetingData =
+        await DatabaseHelper.getMeetingDataById(widget.meeting_id);
+
+    if (meetingData.isNotEmpty) {
+      String memberListJson = meetingData[0]['memberList'];
+      String inviteMemberListJson = meetingData[0]['inviteMemberList'];
+
+      // Handle your memberListJson and inviteMemberListJson data here
+      List<dynamic> memberList = json.decode(memberListJson);
+      List<dynamic> inviteMemberList = json.decode(inviteMemberListJson);
+
+      List<dynamic> combinedList = [...memberList, ...inviteMemberList];
+
+      // Encode combined list back to JSON string
+      Allmembername = json.encode(combinedList);
+      print(Allmembername);
+      print(Allmembername.runtimeType);
+      // Use memberList and inviteMemberList as needed
+      print('Member List: $memberList');
+      print('Invite Member List: $inviteMemberList');
+    } else {
+      print('Meeting with ID $meetingID not found');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {Navigator.pop(context); }, icon: Icon(Icons.arrow_back,color: Colors.white,),),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+        ),
         titleSpacing: 00.0,
         centerTitle: true,
         toolbarHeight: 50.2,
@@ -786,7 +866,8 @@ setState(() {
                 fontSize: 30,
                 fontWeight: FontWeight.w500),
           ),
-        ),),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.only(left: 50.0, right: 50),
         child: SingleChildScrollView(
@@ -825,15 +906,18 @@ setState(() {
                       child: Container(
                         height: MediaQuery.of(context).size.height * 0.35,
                         decoration: BoxDecoration(
-                          color: Colors.white, // Background color of the container
+                          color:
+                              Colors.white, // Background color of the container
                           borderRadius: BorderRadius.circular(
                               10), // Optional: Add border radius to the container
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.5), // Shadow color
+                              color:
+                                  Colors.grey.withOpacity(0.5), // Shadow color
                               spreadRadius: 5, // Spread radius
                               blurRadius: 10, // Blur radius
-                              offset: const Offset(0, 2), // Offset in the y-axis
+                              offset:
+                                  const Offset(0, 2), // Offset in the y-axis
                             ),
                           ],
                         ),
@@ -847,8 +931,8 @@ setState(() {
                                 children: [
                                   if (audioPath != null)
                                     Container(
-                                      width:
-                                      MediaQuery.of(context).size.width * 0.27,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.27,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         gradient: const LinearGradient(
@@ -863,15 +947,16 @@ setState(() {
                                             audioPath!
                                                 .toString(), // Show the path of the audio file
                                             style: const TextStyle(
-                                                fontSize: 12, color: Colors.white),
+                                                fontSize: 12,
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ),
                                     )
                                   else
                                     Container(
-                                      width:
-                                      MediaQuery.of(context).size.width * 0.25,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.25,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         gradient: const LinearGradient(
@@ -885,7 +970,8 @@ setState(() {
                                           child: Text(
                                             "Please select Audio",
                                             style: TextStyle(
-                                                fontSize: 14, color: Colors.white),
+                                                fontSize: 14,
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ),
@@ -894,8 +980,8 @@ setState(() {
                                   InkWell(
                                     onTap: pickAudio,
                                     child: Container(
-                                      width:
-                                      MediaQuery.of(context).size.width * 0.1,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         gradient: const LinearGradient(
@@ -909,7 +995,8 @@ setState(() {
                                           child: Text(
                                             "Browse",
                                             style: TextStyle(
-                                                fontSize: 12, color: Colors.white),
+                                                fontSize: 12,
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ),
@@ -941,28 +1028,31 @@ setState(() {
                               Align(
                                 alignment: Alignment.center,
                                 child: SizedBox(
-                                  height: MediaQuery.of(context).size.height * 0.1,
-                                  width: MediaQuery.of(context).size.width * 0.36,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.1,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.36,
                                   child: Center(
                                     child: showPlayer
                                         ? Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 25),
-                                      child: AudioPlayer(
-                                        source: audioPath!.path,
-                                        onDelete: () {
-                                          setState(() => showPlayer = false);
-                                        },
-                                      ),
-                                    )
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 25),
+                                            child: AudioPlayer(
+                                              source: audioPath!.path,
+                                              onDelete: () {
+                                                setState(
+                                                    () => showPlayer = false);
+                                              },
+                                            ),
+                                          )
                                         : Recorder(
-                                      onStop: (path) {
-                                        setState(() {
-                                          audioPath = File(path);
-                                          showPlayer = true;
-                                        });
-                                      },
-                                    ),
+                                            onStop: (path) {
+                                              setState(() {
+                                                audioPath = File(path);
+                                                showPlayer = true;
+                                              });
+                                            },
+                                          ),
                                   ),
                                 ),
                               ),
@@ -978,22 +1068,26 @@ setState(() {
                       child: Container(
                         height: MediaQuery.of(context).size.height * 0.35,
                         decoration: BoxDecoration(
-                          color: Colors.white, // Background color of the container
+                          color:
+                              Colors.white, // Background color of the container
                           borderRadius: BorderRadius.circular(
                               10), // Optional: Add border radius to the container
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.5), // Shadow color
+                              color:
+                                  Colors.grey.withOpacity(0.5), // Shadow color
                               spreadRadius: 5, // Spread radius
                               blurRadius: 10, // Blur radius
-                              offset: const Offset(0, 2), // Offset in the y-axis
+                              offset:
+                                  const Offset(0, 2), // Offset in the y-axis
                             ),
                           ],
                         ),
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(left: 30.0, top: 20),
+                              padding:
+                                  const EdgeInsets.only(left: 30.0, top: 20),
                               child: Column(
                                 children: [
                                   const SizedBox(
@@ -1003,7 +1097,8 @@ setState(() {
                                     children: [
                                       Checkbox.adaptive(
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
                                         ),
                                         side: const BorderSide(
                                           width: 1,
@@ -1013,13 +1108,13 @@ setState(() {
                                         fillColor: MaterialStateProperty
                                             .resolveWith<Color?>(
                                                 (Set<MaterialState> states) {
-                                              if (states
-                                                  .contains(MaterialState.selected)) {
-                                                return Colors
-                                                    .blue; // The color when checkbox is selected
-                                              }
-                                              return null; // Use the default color when checkbox is not selected
-                                            }),
+                                          if (states.contains(
+                                              MaterialState.selected)) {
+                                            return Colors
+                                                .blue; // The color when checkbox is selected
+                                          }
+                                          return null; // Use the default color when checkbox is not selected
+                                        }),
                                         value: isChecked1,
                                         onChanged: (bool? value) {
                                           if (value != null) {
@@ -1039,7 +1134,8 @@ setState(() {
                                     children: [
                                       Checkbox.adaptive(
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
                                         ),
                                         side: const BorderSide(
                                           width: 1,
@@ -1049,13 +1145,13 @@ setState(() {
                                         fillColor: MaterialStateProperty
                                             .resolveWith<Color?>(
                                                 (Set<MaterialState> states) {
-                                              if (states
-                                                  .contains(MaterialState.selected)) {
-                                                return Colors
-                                                    .blue; // The color when checkbox is selected
-                                              }
-                                              return null; // Use the default color when checkbox is not selected
-                                            }),
+                                          if (states.contains(
+                                              MaterialState.selected)) {
+                                            return Colors
+                                                .blue; // The color when checkbox is selected
+                                          }
+                                          return null; // Use the default color when checkbox is not selected
+                                        }),
                                         value: isChecked2,
                                         onChanged: (bool? value) {
                                           if (value != null) {
@@ -1075,7 +1171,8 @@ setState(() {
                                     children: [
                                       Checkbox.adaptive(
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
                                         ),
                                         side: const BorderSide(
                                           width: 1,
@@ -1085,13 +1182,13 @@ setState(() {
                                         fillColor: MaterialStateProperty
                                             .resolveWith<Color?>(
                                                 (Set<MaterialState> states) {
-                                              if (states
-                                                  .contains(MaterialState.selected)) {
-                                                return Colors
-                                                    .blue; // The color when checkbox is selected
-                                              }
-                                              return null; // Use the default color when checkbox is not selected
-                                            }),
+                                          if (states.contains(
+                                              MaterialState.selected)) {
+                                            return Colors
+                                                .blue; // The color when checkbox is selected
+                                          }
+                                          return null; // Use the default color when checkbox is not selected
+                                        }),
                                         value: isChecked3,
                                         onChanged: (bool? value) {
                                           if (value != null) {
@@ -1171,7 +1268,8 @@ setState(() {
                                   }
                                 },
                                 child: Container(
-                                  width: MediaQuery.of(context).size.width * 0.4,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4,
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
                                       gradient: const LinearGradient(
@@ -1186,7 +1284,8 @@ setState(() {
                                       padding: EdgeInsets.all(8.0),
                                       child: Text("Process",
                                           style: TextStyle(
-                                              fontSize: 12, color: Colors.white)),
+                                              fontSize: 12,
+                                              color: Colors.white)),
                                     ),
                                   ),
                                 ),
@@ -1202,7 +1301,7 @@ setState(() {
                   ],
                 ),
               ),
-              if (isChecked3 == true || isChecked2==true) ..._buildSpeakerTextFields(Data),
+              if (Utils.isloading == false && Data!=null) ..._buildSpeakerTextFields(Data),
               const Padding(
                 padding: EdgeInsets.only(top: 28.0),
                 child: Text(
@@ -1214,21 +1313,25 @@ setState(() {
                       fontFamily: "Montserrat-Regular"),
                 ),
               ),
-                UI_Componenet.Costom_Container_output(context, Data),
-              if (isChecked3 == true || isChecked2==true)
+              UI_Componenet.Costom_Container_output(context, Data),
+              if (Data!=null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 700.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 600.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      ElevatedButton(onPressed: () {
-                        if (jsonData['messages'] != null) {
-                          _handleResponseDataAndSaveAsPdf(jsonData);
-                        }
-                      }, child: Text('Save As PDF')),
-                      ElevatedButton(onPressed: () {
-                        sendDatatoSaveInWorldFile();
-                      }, child: Text('Save As Word')),
+                      ElevatedButton(
+                          onPressed: () {
+                            if (jsonData['messages'] != null) {
+                              _handleResponseDataAndSaveAsPdf(jsonData);
+                            }
+                          },
+                          child: Text('Save As PDF')),
+                      ElevatedButton(
+                          onPressed: () {
+                            sendDatatoSaveInWorldFile();
+                          },
+                          child: Text('Save As Word')),
                       ElevatedButton(
                           onPressed: () {
                             if (jsonData['messages'] != null) {
@@ -1249,6 +1352,3 @@ setState(() {
     );
   }
 }
-
-
-
