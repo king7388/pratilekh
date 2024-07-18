@@ -1,4 +1,4 @@
-# pratilekh
+# Pratilekh
 
 A new Flutter project.
 
