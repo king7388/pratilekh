@@ -6,6 +6,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 import '../Models/MeetingsModel.dart';
+import 'dart:io';
 
 class DatabaseHelper {
   static late Database _database;
@@ -70,6 +71,16 @@ class DatabaseHelper {
           ''');
         },
         version: 1,
+        onOpen: (db) async {
+          // Check if the audio_paths column exists, and add it if it doesn't
+          var result = await db.rawQuery("PRAGMA table_info(members)");
+          bool columnExists = result.any((column) => column['name'] == 'audio_paths');
+          if (!columnExists) {
+            await db.execute('''
+              ALTER TABLE members ADD COLUMN audio_paths TEXT
+            ''');
+          }
+        },
       );
       print('Database initialized');
     } catch (e) {
@@ -137,24 +148,60 @@ class DatabaseHelper {
       return false;
     }
   }
-  static Future<bool> insertMember(String name, String folderName) async {
+  static Future<bool> insertMember(String name, String folderName, List<File?> audioFiles) async {
     try {
-        // Insert the record
-        await _database.insert(
-          'members',
-          {
-            'name': name,
-            'folder_name': folderName,
-          },
-          conflictAlgorithm: ConflictAlgorithm.fail, // Ensure failure on conflict
-        );
-        print('Insert successful');
-        return true; // Return true indicating insertion succeeded
+      // Convert the list of File? objects to a list of paths
+      List<String> audioPaths = audioFiles.map((file) => file?.path ?? '').toList();
+
+      // Convert the list of paths to a JSON string
+      String audioPathsJson = jsonEncode(audioPaths);
+
+      // Insert the member
+      await _database.insert(
+        'members',
+        {
+          'name': name,
+          'folder_name': folderName,
+          'audio_paths': audioPathsJson,
+        },
+        conflictAlgorithm: ConflictAlgorithm.fail,
+      );
+
+      print('Insert successful');
+      return true;
 
     } catch (e) {
-      // Handle SQLiteConstraintException: UNIQUE constraint failed
       print('Insert failed: $e');
-      return false; // Return false indicating insertion failed
+      return false;
+    }
+  }
+  static Future<Map<String, dynamic>?> getMemberById(int id) async {
+    List<Map<String, dynamic>> result = await _database.query(
+      'members',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+  static Future<bool> updateMember(int id, String name, String folderName, List<File?> audioFiles) async {
+    try {
+      List<String> audioPaths = audioFiles.map((file) => file?.path ?? '').toList();
+      String audioPathsJson = jsonEncode(audioPaths);
+
+      await _database.update(
+        'members',
+        {
+          'name': name,
+          'folder_name': folderName,
+          'audio_paths': audioPathsJson,
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 

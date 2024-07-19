@@ -50,9 +50,7 @@ class _Voice_Transcreption_For_AudioState
   Future<void> pickAudio() async {
     audioPath = null;
     showPlayer = false;
-    setState(() {
-
-    });
+    setState(() {});
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: [
@@ -70,9 +68,7 @@ class _Voice_Transcreption_For_AudioState
       setState(() {
         audioPath = File(result.files.single.path!);
         print(audioPath);
-        setState(() {
-
-        });
+        setState(() {});
         showPlayer = true;
       });
     } else {
@@ -206,6 +202,9 @@ class _Voice_Transcreption_For_AudioState
       if (!await newDirectory.exists()) {
         await newDirectory.create(recursive: true);
       }
+      // print(isChecked2);
+      // print(newDirectory);
+      // print(Allmembername);
       // Create a multipart request
       var request = http.MultipartRequest(
           'POST', Uri.parse('http://127.0.0.1:5000/process_audio_speaker'));
@@ -795,6 +794,7 @@ class _Voice_Transcreption_For_AudioState
       return null;
     }
   }
+
   @override
   void initState() {
     getDirectory('C:\\Pratilekh');
@@ -815,10 +815,10 @@ class _Voice_Transcreption_For_AudioState
       String inviteMemberListJson = meetingData[0]['inviteMemberList'];
 
       // Handle your memberListJson and inviteMemberListJson data here
-      List<dynamic> memberList = json.decode(memberListJson);
-      List<dynamic> inviteMemberList = json.decode(inviteMemberListJson);
+      List<dynamic> memberList = json.decode(memberListJson) ?? [];
+      List<dynamic> inviteMemberList = json.decode(inviteMemberListJson) ?? [];
 
-      List<dynamic> combinedList = [...memberList, ...inviteMemberList];
+      List<dynamic> combinedList = [...memberList, ...inviteMemberList] ?? [];
 
       // Encode combined list back to JSON string
       Allmembername = json.encode(combinedList);
@@ -836,15 +836,17 @@ class _Voice_Transcreption_For_AudioState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-        ),
+        leading: Utils.isloading
+            ? Container()
+            : IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+              ),
         titleSpacing: 00.0,
         centerTitle: true,
         toolbarHeight: 50.2,
@@ -1301,7 +1303,8 @@ class _Voice_Transcreption_For_AudioState
                   ],
                 ),
               ),
-              if (Utils.isloading == false && Data!=null) ..._buildSpeakerTextFields(Data),
+              if (Utils.isloading == false && Data != null)
+                ..._buildSpeakerTextFields(Data),
               const Padding(
                 padding: EdgeInsets.only(top: 28.0),
                 child: Text(
@@ -1314,7 +1317,7 @@ class _Voice_Transcreption_For_AudioState
                 ),
               ),
               UI_Componenet.Costom_Container_output(context, Data),
-              if (Data!=null)
+              if (Data != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 600.0),
                   child: Row(

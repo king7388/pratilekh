@@ -30,7 +30,7 @@ class _Voice_SampleState extends State<Voice_Sample> {
     null,
     null,
   ];
-
+  List<File?> newPath=[];
   List<String> sampletext = [
     'The quick brown fox jumps over the lazy dog, capturing everyone attention with its swift and graceful movements.',
     'She sells seashells by the seashore, collecting beautiful treasures from the sandy beach as the waves crash gently.',
@@ -39,6 +39,31 @@ class _Voice_SampleState extends State<Voice_Sample> {
     'In the middle of the bustling city, a quiet park offered a peaceful escape, where people could relax and enjoy nature.',
   ];
   TextEditingController membername = TextEditingController();
+  Future<void> copyAndSaveNewPaths(List<File?> audioPath, Directory newDirectory) async {
+    List<File?> newAudioPath = [];
+
+    for (var element in audioPath) {
+      if (element != null && await element.exists()) {
+        final newFilePath = '${newDirectory.path}\\${element.uri.pathSegments.last}';
+
+        // If the file already exists in the destination folder, skip copying
+        if (!File(newFilePath).existsSync()) {
+          await element.copy(newFilePath);
+        }
+
+        // Add the new file to the list
+        newAudioPath.add(File(newFilePath));
+      } else {
+        // If the element is null, add null to maintain the same structure
+        newAudioPath.add(null);
+      }
+    }
+
+    // Update the audioPath with new paths
+    audioPath.clear();
+    audioPath.addAll(newAudioPath);
+  }
+
 
   // void _startRecording() {
   //
@@ -202,6 +227,7 @@ class _Voice_SampleState extends State<Voice_Sample> {
                                                       setState(() =>
                                                           showPlayer[index] =
                                                               false);
+                                                      audioPath[index] = null; // Set the audioPath to null on delete
                                                     },
                                                   ),
                                                 )
@@ -211,6 +237,7 @@ class _Voice_SampleState extends State<Voice_Sample> {
                                                       audioPath[index] =
                                                           File(path);
                                                       showPlayer[index] = true;
+                                                      print(File(path));
                                                     });
                                                   },
                                                 ),
@@ -270,39 +297,47 @@ class _Voice_SampleState extends State<Voice_Sample> {
                         for (var element in audioPath) {
                           if (element != null && await element.exists()) {
                             final newFilePath =
-                                '${newDirectory.path}/${element.uri.pathSegments.last}';
+                                '${newDirectory.path}\\${element.uri.pathSegments.last}';
                             if (File(newFilePath).existsSync()) {
                               // File already exists in destination folder, skip it
                               continue;
                             }
-                            await element.copy(newFilePath);
+                            //await element.copy(newFilePath);
+                            // Assuming `audioPath` and `newDirectory` are already defined
+                            await copyAndSaveNewPaths(audioPath, newDirectory);
+
+// Now `audioPath` contains the new paths
+
                           }
                         }
-                        DatabaseHelper.insertMember(
-                            memebersname!, newDirectory.path);
-                        audioPath = [null, null, null, null, null];
-                        showPlayer = [false, false, false, false, false];
-                        membername.clear();
+                      final success=  DatabaseHelper.insertMember(
+                            memebersname!, newDirectory.path,audioPath);
+                        if(await success){
+                          audioPath = [null, null, null, null, null];
+                          showPlayer = [false, false, false, false, false];
+                          membername.clear();
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Success'),
+                                content: const Text(
+                                    'Member sample added successfully'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          setState(() {});
+                        }
 
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Success'),
-                              content: const Text(
-                                  'Member sample added successfully'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('OK'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                        setState(() {});
+
                       } else {
                         showDialog(
                           context: context,

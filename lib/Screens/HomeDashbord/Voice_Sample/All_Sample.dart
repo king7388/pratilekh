@@ -8,6 +8,7 @@ import 'package:pratilekh/Screens/HomeDashbord/Voice_Sample/Voice_Sample.dart';
 
 import '../../../DataBase_Backend/Helpers/Helper.dart';
 import '../../../Utils/Contants.dart';
+import 'Edit_Sample.dart';
 
 class All_Sample extends StatefulWidget {
   const All_Sample({Key? key}) : super(key: key);
@@ -128,8 +129,22 @@ class _All_SampleState extends State<All_Sample> {
                           '${index + 1}.',
                           style: TextStyleForTitle,
                         ),
-                        title: Text(_members[index]['name']),
-                        subtitle: Text(_members[index]['folder_name']),
+                        title: RichText(
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: 'Person Name :- ',
+                                style: TextStyle(color: Colors.blue), // You can add more styling here
+                              ),
+                              TextSpan(
+                                text: '${_members[index]['name']}',
+                                style: TextStyle(color: Colors.black), // You can add more styling here
+                              ),
+                            ],
+                          ),
+                        )
+                        ,
+                        //subtitle: Text(_members[index]['folder_name']),
                         trailing: SizedBox(
                           // Wrap the Row with a SizedBox
                           width:
@@ -138,8 +153,9 @@ class _All_SampleState extends State<All_Sample> {
                             children: [
                               ElevatedButton(
                                 onPressed: () async {
-                                  await Process.run('explorer.exe',
-                                      [_members[index]['folder_name']]);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Voice_Sample_EditScreen(memberId: _members[index]['id'],)));
+                                  // await Process.run('explorer.exe',
+                                  //     [_members[index]['folder_name']]);
                                 },
                                 child: Text('View'),
                               ),
