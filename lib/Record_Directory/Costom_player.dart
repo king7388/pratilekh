@@ -175,3 +175,121 @@ class _Costom_PlayerState extends State<Costom_Player> {
   Source get _source =>
       kIsWeb ? ap.UrlSource(widget.source) : ap.DeviceFileSource(widget.source);
 }
+
+
+class Costom_PlayerForplayonly extends StatefulWidget {
+  final String source;
+
+  const Costom_PlayerForplayonly({
+    super.key,
+    required this.source,
+  });
+
+  @override
+  State<Costom_PlayerForplayonly> createState() => _Costom_PlayerForplayonlyState();
+}
+
+class _Costom_PlayerForplayonlyState extends State<Costom_PlayerForplayonly> {
+  static const double _controlSize = 30;
+  final _audioPlayer = ap.AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  late StreamSubscription<void> _playerStateChangedSubscription;
+  late StreamSubscription<Duration?> _durationChangedSubscription;
+  late StreamSubscription<Duration> _positionChangedSubscription;
+  Duration? _position;
+  Duration? _duration;
+
+  @override
+  void initState() {
+    _playerStateChangedSubscription =
+        _audioPlayer.onPlayerComplete.listen((_) async {
+          await stop();
+        });
+    _positionChangedSubscription = _audioPlayer.onPositionChanged.listen(
+          (position) => setState(() {
+        _position = position;
+      }),
+    );
+    _durationChangedSubscription = _audioPlayer.onDurationChanged.listen(
+          (duration) => setState(() {
+        _duration = duration;
+      }),
+    );
+
+    _audioPlayer.setSource(_source).catchError((error) {
+      print('Error setting source: $error');
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _playerStateChangedSubscription.cancel();
+    _positionChangedSubscription.cancel();
+    _durationChangedSubscription.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: _controlSize,
+        height: _controlSize,
+        child: _buildControl(),
+      ),
+    );
+  }
+
+  Widget _buildControl() {
+    Icon icon;
+    Color color;
+
+    if (_audioPlayer.state == ap.PlayerState.playing) {
+      icon = const Icon(Icons.pause, color: Colors.red, size: _controlSize * 0.6);
+      color = Colors.red.withOpacity(0.1);
+    } else {
+      final theme = Theme.of(context);
+      icon = Icon(Icons.play_arrow, color: theme.primaryColor, size: _controlSize * 0.6);
+      color = theme.primaryColor.withOpacity(0.1);
+    }
+
+    return ClipOval(
+      child: Material(
+        color: color,
+        child: InkWell(
+          child: Center(
+            child: SizedBox(width: _controlSize * 0.8, height: _controlSize * 0.8, child: icon),
+          ),
+          onTap: () {
+            if (_audioPlayer.state == ap.PlayerState.playing) {
+              pause();
+            } else {
+              play();
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> play() {
+    return _audioPlayer.play(_source).catchError((error) {
+      print('Error playing audio: $error');
+    });
+  }
+
+  Future<void> pause() async {
+    await _audioPlayer.pause();
+    setState(() {});
+  }
+
+  Future<void> stop() async {
+    await _audioPlayer.stop();
+    setState(() {});
+  }
+
+  Source get _source =>
+      kIsWeb ? ap.UrlSource(widget.source) : ap.DeviceFileSource(widget.source);
+}

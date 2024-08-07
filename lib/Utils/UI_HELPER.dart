@@ -1,26 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../Record_Directory/Costom_player.dart';
 import '../Screens/HomeDashbord/Voice_Transcretion_Screen/Live_Transcreption_Page.dart';
 import 'Contants.dart';
 import 'Utils.dart';
 
 class UI_Componenet {
   static Widget Costom_Container_output(
-      BuildContext context, Map<String, dynamic>? Data) {
+      BuildContext context,
+      Map<String, dynamic>? Data,
+      void Function(int, String) onMessageChanged) {
     return Padding(
       padding: const EdgeInsets.all(18.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Background color of the container
-          borderRadius: BorderRadius.circular(
-              10), // Optional: Add border radius to the container
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5), // Shadow color
-              spreadRadius: 5, // Spread radius
-              blurRadius: 10, // Blur radius
-              offset: const Offset(0, 2), // Offset in the y-axis
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -38,38 +42,82 @@ class UI_Componenet {
                 children: [
                   if (Data['messages'] != null)
                     SizedBox(
-                      height:
-                      MediaQuery.of(context).size.height * 0.6,
+                      height: MediaQuery.of(context).size.height * 0.6,
                       child: ListView.builder(
                         itemCount: Data['messages'].length,
                         itemBuilder: (context, index) {
                           final message = Data['messages'][index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.green,
-                              child: Text(
-                                (index + 1).toString(),
-                                style: const TextStyle(
-                                    color: Colors.white),
-                              ),
-                            ),
-                            title: Text(
-                              '${message['speaker']} (${message['time']})',
-                              style: const TextStyle(
-                                fontSize:
-                                16, // Adjust the font size for title
-                                fontWeight: FontWeight
-                                    .bold, // Add other styling if needed
-                              ),
-                            ),
-                            subtitle: Text(
-                              message['text']!,
-                              style: const TextStyle(
-                                fontSize:
-                                14, // Adjust the font size for subtitle
-                                // Add other styling if needed
-                              ),
-                            ),
+                          final String audioPathString = message['audio_path'];
+
+                          // final speakerController = TextEditingController(
+                          //     text: '${message['speaker']} (${message['start_time']})');
+                          // final textController = TextEditingController(text: message['text']!);
+
+                          return FutureBuilder<bool>(
+                            future: Future.value(File(audioPathString).exists()),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Text('Error: ${snapshot.error}'),
+                                );
+                              }
+
+                              if (!snapshot.hasData || !snapshot.data!) {
+                                return Container(); // Do not show player if the file does not exist
+                              }
+
+                              return RepaintBoundary(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 7,
+                                      child: ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundColor: Colors.green,
+                                          child: Text(
+                                            (index + 1).toString(),
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          '${message['speaker']} (${message['time']})',
+                                          style: const TextStyle(
+                                            fontSize:
+                                            16, // Adjust the font size for title
+                                            fontWeight: FontWeight
+                                                .bold, // Add other styling if needed
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          message['text']!,
+                                          style: const TextStyle(
+                                            fontSize:
+                                            14, // Adjust the font size for subtitle
+                                            // Add other styling if needed
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // if (snapshot.data!)
+                                    //   Expanded(
+                                    //     flex: 3,
+                                    //     child: Padding(
+                                    //       padding: const EdgeInsets.symmetric(horizontal: 25),
+                                    //       child: Costom_PlayerForplayonly(
+                                    //         source: audioPathString,
+                                    //       ),
+                                    //     ),
+                                    //   ),
+                                  ],
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -77,8 +125,10 @@ class UI_Componenet {
                   if (Data['result'] != null)
                     Container(
                       child: Center(
-                          child: SingleChildScrollView(
-                              child: Text('${Data['result'].replaceAll('[', '').replaceAll(']', '')}'))),
+                        child: SingleChildScrollView(
+                          child: Text('${Data['result'].replaceAll('[', '').replaceAll(']', '')}'),
+                        ),
+                      ),
                     )
                 ],
               ),

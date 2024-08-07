@@ -905,7 +905,7 @@ class _Live_Transcripton_ScreenState extends State<Live_Transcripton_Screen> {
               ),
             ),
             if (webshocket == false)
-              UI_Componenet.Costom_Container_output(context, Data),
+              // UI_Componenet.Costom_Container_output(context, Data),
             if (webshocket == true)
               // StreamBuilder(
               //   stream: channel!.stream,

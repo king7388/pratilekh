@@ -11,6 +11,7 @@ import '../../../DataBase_Backend/Models/MeetingsModel.dart';
 import '../../../Utils/Contants.dart';
 import '../../../Utils/UI_HELPER.dart';
 import '../Add_Meeting_Screen/Add_Meeting_Screen.dart';
+
 import 'Transcript_Using_Audio.dart';
 import 'ViewAll_Details.dart';
 
@@ -140,6 +141,8 @@ class _All_Meeting_ScreenState extends State<All_Meeting_Screen> {
                                             Spacer(),
                                             ElevatedButton(
                                                 onPressed: () {
+                                                 // Navigator.push(context, MaterialPageRoute(builder: (context)=>AudioPlayerExample()));
+
                                                   Navigator.push(
                                                       context,
                                                       MaterialPageRoute(

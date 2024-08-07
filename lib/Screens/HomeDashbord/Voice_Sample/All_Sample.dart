@@ -134,16 +134,19 @@ class _All_SampleState extends State<All_Sample> {
                             children: [
                               const TextSpan(
                                 text: 'Person Name :- ',
-                                style: TextStyle(color: Colors.blue), // You can add more styling here
+                                style: TextStyle(
+                                    color: Colors
+                                        .blue), // You can add more styling here
                               ),
                               TextSpan(
                                 text: '${_members[index]['name']}',
-                                style: TextStyle(color: Colors.black), // You can add more styling here
+                                style: TextStyle(
+                                    color: Colors
+                                        .black), // You can add more styling here
                               ),
                             ],
                           ),
-                        )
-                        ,
+                        ),
                         //subtitle: Text(_members[index]['folder_name']),
                         trailing: SizedBox(
                           // Wrap the Row with a SizedBox
@@ -153,20 +156,48 @@ class _All_SampleState extends State<All_Sample> {
                             children: [
                               ElevatedButton(
                                 onPressed: () async {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Voice_Sample_EditScreen(memberId: _members[index]['id'],)));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              Voice_Sample_EditScreen(
+                                                memberId: _members[index]['id'],
+                                              )));
                                   // await Process.run('explorer.exe',
                                   //     [_members[index]['folder_name']]);
                                 },
                                 child: Text('View'),
                               ),
                               Spacer(),
+                             // if(_members[index]['is_used']==1)
+//                               ElevatedButton(
+//                                 onPressed: () async {
+//                                   bool nameFound = await DatabaseHelper.checkNameInColumns(_members[index]['name']);
+//                                   if (nameFound) {
+//                                     print('Name found in one of the columns');
+//                                   } else {
+//                                     print('Name not found in either column');
+//                                   }
+//                                 },
+//                                 child: Text('Check'),
+//                               )
+// ,
                               ElevatedButton(
                                   onPressed: () async {
-                                    showDeleteConfirmationDialog(
-                                        context,
-                                        _members[index]['id'],
-                                        _members[index]['folder_name'],
-                                        index);
+                                    bool nameFound = await DatabaseHelper.checkNameInColumns(_members[index]['name']);
+                                    if (nameFound) {
+                                      _showAlertDialog(context, 'Cannot Delete !', 'This sample can not be deleted!'
+                                          '\nBecause this sample already used in meetings');
+                                      print('Name found in one of the columns');
+                                    } else {
+                                      showDeleteConfirmationDialog(
+                                          context,
+                                          _members[index]['id'],
+                                          _members[index]['folder_name'],
+                                          index);
+                                      print('Name not found in either column');
+                                    }
+
 
                                     // DatabaseHelper.deleteMember(_members[index]['id']);
                                     // setState(() {
@@ -187,6 +218,25 @@ class _All_SampleState extends State<All_Sample> {
           ],
         ),
       ),
+    );
+  }
+  void _showAlertDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title,style: const TextStyle(color: Colors.red),),
+          content: Text(message ,style: TextStyle(color: Colors.blue),),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

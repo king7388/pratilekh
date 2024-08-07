@@ -32,11 +32,11 @@ class _Voice_SampleState extends State<Voice_Sample> {
   ];
   List<File?> newPath=[];
   List<String> sampletext = [
-    'The quick brown fox jumps over the lazy dog, capturing everyone attention with its swift and graceful movements.',
-    'She sells seashells by the seashore, collecting beautiful treasures from the sandy beach as the waves crash gently.',
-    'Bright stars twinkled in the clear night sky, casting a serene glow over the tranquil countryside and its sleeping inhabitants.',
-    'A curious cat climbed the tall tree, navigating the branches skillfully, while birds chirped melodiously from their nests.',
-    'In the middle of the bustling city, a quiet park offered a peaceful escape, where people could relax and enjoy nature.',
+    'The Indian Army is one of the largest and most powerful military forces in the world. It plays a vital role in protecting the country`s borders and sovereignty.',
+    'The army uses advanced technology like drones and satellite imagery to keep an eye on border areas and detect any unauthorized movements or intruders.',
+    'The army conducts regular patrols along the borders and maintains a network of outposts and bunkers to ensure constant vigilance against intruders.',
+    'By employing a combination of technology, training, and teamwork, the Indian Army ensures the safety and security of the nation’s borders',
+    'The army`s primary focus is on maintaining the country`s territorial integrity and preventing any unauthorized access, keeping the nation safe from external threats.',
   ];
   TextEditingController membername = TextEditingController();
   Future<void> copyAndSaveNewPaths(List<File?> audioPath, Directory newDirectory) async {
@@ -135,7 +135,8 @@ class _Voice_SampleState extends State<Voice_Sample> {
                         border: InputBorder.none,
                       ),
                       onChanged: (value) {
-                        memebersname = membername.text;
+                      //  memebersname = membername.text;
+                        memebersname = value.trim();
                       },
                     ),
                   ),
@@ -179,35 +180,43 @@ class _Voice_SampleState extends State<Voice_Sample> {
                                   style: TextStyleForTitle,
                                   maxLines: 2,
                                 ),
-                                title: Column(
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'Read this content when recording start.',
-                                            style: TextStyle(color: Colors.red),
+                                title: SizedBox(
+                                  width:  MediaQuery.of(context).size.width * 0.7,
+                                  child: Column(
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Read this content when recording start.',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '${sampletext[index] ?? 'Title not available'}',
-                                          style: TextStyleForVoiceSample,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '${sampletext[index] ?? 'Title not available'}',
+                                              style: TextStyleForVoiceSample,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 trailing: SizedBox(
                                   height:
                                       MediaQuery.of(context).size.height * 0.1,
                                   // Wrap the Row with a SizedBox
                                   width:
-                                      MediaQuery.of(context).size.width * 0.26,
+                                      MediaQuery.of(context).size.width * 0.20,
                                   child: Row(
                                     children: [
                                       SizedBox(

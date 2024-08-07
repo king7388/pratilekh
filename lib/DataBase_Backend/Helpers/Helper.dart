@@ -75,10 +75,16 @@ class DatabaseHelper {
           // Check if the audio_paths column exists, and add it if it doesn't
           var result = await db.rawQuery("PRAGMA table_info(members)");
           bool columnExists = result.any((column) => column['name'] == 'audio_paths');
+          bool boolColumnExists = result.any((column) => column['name'] == 'is_used'); // Replace 'is_active' with your boolean column name
           if (!columnExists) {
             await db.execute('''
               ALTER TABLE members ADD COLUMN audio_paths TEXT
             ''');
+          }
+          if (!boolColumnExists) {
+            await db.execute('''
+            ALTER TABLE members ADD COLUMN is_used INTEGER DEFAULT 0
+          ''');
           }
         },
       );
@@ -89,6 +95,30 @@ class DatabaseHelper {
       throw Exception('Failed to initialize database: $e');
     }
   }
+
+ static Future<bool> checkNameInColumns(String name) async {
+   final db = _database;
+
+   // Query to check if the name exists in memberList or inviteMemberList
+   final result = await db.rawQuery('''
+    SELECT memberList, inviteMemberList 
+    FROM meetings 
+    WHERE memberList LIKE ? OR inviteMemberList LIKE ?
+  ''', ['%$name%', '%$name%']);
+
+   if (result.isNotEmpty) {
+     for (var row in result) {
+       final memberList = row['memberList'] as String;
+       final inviteMemberList = row['inviteMemberList'] as String;
+
+       if (memberList.contains(name) || inviteMemberList.contains(name)) {
+         return true;
+       }
+     }
+   }
+   return false;
+ }
+
   static Future<List<Map<String, dynamic>>> getAllMembers() async {
     try {
       if (_database == null) {
@@ -342,7 +372,7 @@ static Future<List<String>> getColumns(String tableName) async {
   }
 
 
-  static Future<bool> insertMeetingRecord(
+  static Future<bool>insertMeetingRecord(
       String meetingId,
       String inputSource,
       bool p1,

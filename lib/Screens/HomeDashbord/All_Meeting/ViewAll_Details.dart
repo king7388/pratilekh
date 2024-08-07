@@ -1920,11 +1920,13 @@ print(response.body);
                                                     String formattedDate = outputDateFormat.format(meetingDate);
 
                                                     // Print the formatted date
-                                                    print(formattedDate); /// Output: 2024-05-10
+                                                  //  print(formattedDate); /// Output: 2024-05-10
+
+                                                    // print(record['o2']);
                                                     Map<String, dynamic>?
                                                     data=json.decode(
                                                         record['o2']);
-                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=>Create_MOM_Screen(copyto: meetingDetails['copyto'], invitedmember: meetingDetails['inviteMemberList'], meetingdate: formattedDate, meetingID: widget.meetingId, meetingmember: meetingDetails['memberList'], meetingtitle: meetingDetails['title'], meetingcode: meetingDetails['codeNo'],multispeakerdata: data, recordfilename: record['input_source'],momdata: record['m_o_m'],)));
+                                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>Create_MOM_Screen(copyto: meetingDetails['copyto'], invitedmember: meetingDetails['inviteMemberList'], meetingdate: formattedDate, meetingID: widget.meetingId, meetingmember: meetingDetails['memberList'], meetingtitle: meetingDetails['title'], meetingcode: meetingDetails['codeNo'],multispeakerdata: data, recordfilename: record['input_source'],momdata: record['m_o_m'],)));
 
                                                   }
                                                   else {

@@ -21,6 +21,8 @@ import '../../../Utils/UI_HELPER.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../Utils/Utils.dart';
+import 'CustomContainerfor_showandEdit_OUTPUT.dart';
+
 
 /// Large Screen
 class Voice_Transcreption_For_Audio extends StatefulWidget {
@@ -378,7 +380,8 @@ class _Voice_Transcreption_For_AudioState
   }
 
   Future<void> _handleResponseDataAndSaveAsPdf(
-      Map<String, dynamic> jsonData) async {
+      Map<String, dynamic> jsonData) async
+  {
     // Extract messages from JSON data
     List<dynamic> messages = jsonData['messages'];
     if (isChecked3 == false) {
@@ -1316,35 +1319,95 @@ class _Voice_Transcreption_For_AudioState
                       fontFamily: "Montserrat-Regular"),
                 ),
               ),
-              UI_Componenet.Costom_Container_output(context, Data),
-              if (Data != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 600.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton(
-                          onPressed: () {
-                            if (jsonData['messages'] != null) {
-                              _handleResponseDataAndSaveAsPdf(jsonData);
-                            }
-                          },
-                          child: Text('Save As PDF')),
-                      ElevatedButton(
-                          onPressed: () {
-                            sendDatatoSaveInWorldFile();
-                          },
-                          child: Text('Save As Word')),
-                      ElevatedButton(
-                          onPressed: () {
-                            if (jsonData['messages'] != null) {
-                              _saveMessages(jsonData);
-                            }
-                          },
-                          child: Text('Save As TXT')),
-                    ],
-                  ),
-                ),
+              // UI_Componenet.Costom_Container_output(
+              //     context, Data ,(index, value) {
+              //   Data?['messages'][index]['text'] = value;
+              // },),
+
+              CustomContainer(
+                data: Data,
+                onMessageChanged: (int index, String newSpeaker, String newText) {
+                  // Handle message change
+
+                  Data?['messages'][index]['text'] = newText;
+                  // Optionally, setState or perform any other updates
+                },
+              )
+
+              ,
+              // CustomContainerOutput(
+              //   data: Data,
+              //   onMessageChanged: (index, newValue) {
+              //     // Handle the message changes here
+              //     setState(() {
+              //       Data?['messages'][index]['text'] = newValue; // Update the Data object with new message text
+              //     });
+              //   },
+              // ),
+              if (Utils.isloading == false && Data != null)
+ElevatedButton(onPressed: () async {
+  var databasedata;
+
+  setState(() {
+    databasedata = json.encode(Data);
+  });
+  if (audioPath != null) {
+    String audioFilePath = audioPath!.path;
+
+    final newDirectory = Directory('${pratlekhpath}\\Voice_Sample');
+    if (!await newDirectory.exists()) {
+      await newDirectory.create(recursive: true);
+    }
+    String currentDate =
+    DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+    bool update = await DatabaseHelper.insertMeetingRecord(
+        widget.meeting_id,
+        audioFilePath,
+        isChecked1,
+        isChecked2,
+        isChecked3,
+        null,
+        databasedata.toString(),
+        null,
+        null,
+        currentDate);
+   if(update){
+     _showAlertDialog(context,'Saved !','Data  saved Successfully');
+   }else{
+     _showAlertDialog(context,'Alert !',' Something went Wrong ..Try after some time');
+   }
+  }
+}, child: const Text('Save')),
+              // CustomContainerOutput(Data: Data, audiopath: audioPath?.path),
+
+    // if (Data != null)
+              //   Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 600.0),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //       children: [
+              //         ElevatedButton(
+              //             onPressed: () {
+              //               if (jsonData['messages'] != null) {
+              //                 _handleResponseDataAndSaveAsPdf(jsonData);
+              //               }
+              //             },
+              //             child: Text('Save As PDF')),
+              //         ElevatedButton(
+              //             onPressed: () {
+              //               sendDatatoSaveInWorldFile();
+              //             },
+              //             child: Text('Save As Word')),
+              //         ElevatedButton(
+              //             onPressed: () {
+              //               if (jsonData['messages'] != null) {
+              //                 _saveMessages(jsonData);
+              //               }
+              //             },
+              //             child: Text('Save As TXT')),
+              //       ],
+              //     ),
+              //   ),
               const SizedBox(
                 height: 100,
               ),
@@ -1352,6 +1415,25 @@ class _Voice_Transcreption_For_AudioState
           ),
         ),
       ),
+    );
+  }
+  void _showAlertDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title,style: const TextStyle(color: Colors.red),),
+          content: Text(message ,style: TextStyle(color: Colors.blue),),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

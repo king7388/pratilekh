@@ -522,7 +522,7 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                     Expanded(
                                       child: ListTile(
                                         title: Text(
-                                            '${message['speaker']} (${message['time']})'),
+                                            '${message['speaker']} (${message['start_time']})'),
                                         subtitle: Text(message['text']),
                                       ),
                                     ),
@@ -552,13 +552,13 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                         onChanged: (value) {
                                           // Implement the logic when dropdown value changes
                                           if (value == 'Agenda Pt') {
-                                            _addDataInAgenda(message['text']);
+                                            _addDataInAgenda('(  ${message['speaker']}  )    '+message['text']);
                                           } else if (value == 'Dscn') {
-                                            _addDataInDscn(message['text']);
+                                            _addDataInDscn('(  ${message['speaker']}  )    '+message['text']);
                                           } else if (value == 'Resp') {
-                                            _addDataInResp(message['text']);
+                                            _addDataInResp('(  ${message['speaker']}  )    '+message['text']);
                                           } else if (value == 'Info') {
-                                            _addDataInInfo(message['text']);
+                                            _addDataInInfo('(  ${message['speaker']}  )    '+message['text']);
                                           }
                                           setState(() {
 
