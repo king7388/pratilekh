@@ -10,6 +10,7 @@ import '../../../DataBase_Backend/Helpers/Helper.dart';
 import '../../../Utils/Contants.dart';
 import '../../../Utils/UI_HELPER.dart';
 import 'dart:io';
+
 class Create_MOM_Screen extends StatefulWidget {
   var meetingtitle;
   var meetingID;
@@ -31,8 +32,8 @@ class Create_MOM_Screen extends StatefulWidget {
       required this.meetingmember,
       required this.meetingtitle,
       required this.meetingcode,
-        required this.recordfilename,
-        this.momdata,
+      required this.recordfilename,
+      this.momdata,
       this.multispeakerdata,
       this.paragragdata});
 
@@ -41,30 +42,24 @@ class Create_MOM_Screen extends StatefulWidget {
 }
 
 class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
-
-
   List<List<String>> agendaLists = [];
   List<List<String>> dscnLists = [];
   List<List<String>> respLists = [];
   List<List<String>> infoLists = [];
   List<int> Sno = [];
 
-
   Map<int, Map<String, List<String>>> allData = {};
 
   int _selectedIndex = 0; // Variable to track the selected index
-  ScrollController _controller = ScrollController(); // Controller for ListView scrolling
-
-
-
-
+  ScrollController _controller =
+      ScrollController(); // Controller for ListView scrolling
 
   @override
   void initState() {
     Sno.add(1);
     // TODO: implement initState
     super.initState();
-    if(widget.momdata!=null){
+    if (widget.momdata != null) {
       convertdata(widget.momdata);
     }
   }
@@ -187,33 +182,28 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
     });
   }
 
- void convertdata(String momdata){
+  void convertdata(String momdata) {
+    if (momdata != null) {
+      // Decode the retrieved JSON string
+      Map<String, dynamic> decodedData = jsonDecode(momdata);
 
-       if (momdata != null) {
-         // Decode the retrieved JSON string
-         Map<String, dynamic> decodedData = jsonDecode(momdata);
+      // Convert the keys to integers
+      Map<int, Map<String, List<String>>> allData = {};
+      decodedData.forEach((key, value) {
+        Map<String, List<String>> innerMap = {};
+        value.forEach((innerKey, innerValue) {
+          innerMap[innerKey] = List<String>.from(innerValue);
+        });
+        allData[int.parse(key)] = innerMap;
+      });
 
-         // Convert the keys to integers
-         Map<int, Map<String, List<String>>> allData = {};
-         decodedData.forEach((key, value) {
-           Map<String, List<String>> innerMap = {};
-           value.forEach((innerKey, innerValue) {
-             innerMap[innerKey] = List<String>.from(innerValue);
-           });
-           allData[int.parse(key)] = innerMap;
-         });
-
-         // Set the state with the converted data
-         setState(() {
-           this.allData = allData;
-           Sno = List<int>.generate(allData.length, (index) => index + 1);
-         });
-
-       } else {
-
-       }
- }
-
+      // Set the state with the converted data
+      setState(() {
+        this.allData = allData;
+        Sno = List<int>.generate(allData.length, (index) => index + 1);
+      });
+    } else {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +250,6 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: RichText(
@@ -280,7 +269,6 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -374,53 +362,119 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
             ),
             const Divider(),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0,vertical: 10),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
               child: Align(
-                alignment: Alignment.centerRight,
-                child:
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 48.0),
-                      child: InkWell(
-                        onTap:
-                            ()
-                        async {
-                          String currentDate =
-                          DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
-                          Map<String, Map<String, dynamic>> _convertKeysToString(Map<int, Map<String, dynamic>> originalMap) {
-                            Map<String, Map<String, dynamic>> newMap = {};
-                            originalMap.forEach((key, value) {
-                              newMap[key.toString()] = value;
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 48.0),
+                        child: InkWell(
+                          onTap: () async {
+                            String currentDate =
+                                DateFormat('dd-MM-yyyy HH:mm:ss')
+                                    .format(DateTime.now());
+                            Map<String, Map<String, dynamic>>
+                                _convertKeysToString(
+                                    Map<int, Map<String, dynamic>>
+                                        originalMap) {
+                              Map<String, Map<String, dynamic>> newMap = {};
+                              originalMap.forEach((key, value) {
+                                newMap[key.toString()] = value;
+                              });
+                              return newMap;
+                            }
+
+                            var jsonData =
+                                jsonEncode(_convertKeysToString(allData));
+
+                            bool success =
+                                await DatabaseHelper.insertMeetingRecord(
+                                    widget.meetingID,
+                                    widget.recordfilename,
+                                    false,
+                                    true,
+                                    false,
+                                    null,
+                                    null,
+                                    null,
+                                    jsonData,
+                                    currentDate);
+
+                            if (success) {
+                              SnackBarHelper.showFailedInsertionSnackbar(
+                                  context,
+                                  'M-O-M created successfully . Now you can download M-O-M');
+                              Navigator.pop(context);
+                              // Insertion or update was successful
+                            } else {
+                              SnackBarHelper.showFailedInsertionSnackbar(
+                                  context, 'Something went wrong ....');
+                              // Insertion or update failed
+                            }
+                            //DatabaseHelper.insertMOM_Data(jsonData,widget.meetingID,widget.recordfilename);
+                          },
+                          child: Container(
+                              width: 170,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                    color: Colors.grey), // Add border color
+                                borderRadius: BorderRadius.circular(
+                                    5.0), // Add border radius
+                              ),
+                              child: const Center(
+                                  child: Text(
+                                'Save   M-O-M',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ))),
+                        ),
+                      ),
+                      Container(
+                        width: 170,
+                        height: 35,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                              color: Colors.grey), // Add border color
+                          borderRadius:
+                              BorderRadius.circular(5.0), // Add border radius
+                        ),
+                        child: DropdownButton<int>(
+                          underline: Container(),
+                          value: _selectedIndex,
+                          items: List.generate(
+                            Sno.length,
+                            (index) => DropdownMenuItem<int>(
+                              value: index,
+                              child: Text('      S. No.  ${Sno[index]}'),
+                            ),
+                          ),
+                          onChanged: (int? newIndex) {
+                            setState(() {
+                              _selectedIndex = newIndex!;
+                              _controller.animateTo(
+                                _selectedIndex *
+                                    400.0, // Adjust 100.0 as needed based on item height
+                                duration: Duration(milliseconds: 500),
+                                curve: Curves.easeInOut,
+                              );
                             });
-                            return newMap;
-                          }
-
-                          var jsonData = jsonEncode(_convertKeysToString(allData));
-
-                          bool success = await DatabaseHelper.insertMeetingRecord(
-                              widget.meetingID,
-                              widget.recordfilename,
-                              false,
-                              true,
-                              false,
-                              null,
-                              null,
-                              null,
-                              jsonData,
-                              currentDate);
-
-
-                          if (success) {
-                            SnackBarHelper.showFailedInsertionSnackbar(context, 'M-O-M created successfully . Now you can download M-O-M');
-                            Navigator.pop(context);
-                            // Insertion or update was successful
-                          } else {
-                            SnackBarHelper.showFailedInsertionSnackbar(context, 'Something went wrong ....');
-                            // Insertion or update failed
-                          }
-                          //DatabaseHelper.insertMOM_Data(jsonData,widget.meetingID,widget.recordfilename);
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 50,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            // Increment values in Sno list
+                            Sno.add(Sno.length + 1);
+                          });
                         },
                         child: Container(
                             width: 170,
@@ -428,78 +482,18 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               border: Border.all(
-                                  color: Colors
-                                      .grey), // Add border color
+                                  color: Colors.grey), // Add border color
                               borderRadius: BorderRadius.circular(
                                   5.0), // Add border radius
                             ),
-                            child: const Center(child: Text('Save   M-O-M',style: TextStyle(fontWeight: FontWeight.bold),))
-
-                        ),
+                            child: const Center(
+                                child: Text(
+                              'Add New Table',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ))),
                       ),
-                    ),
-                    Container(
-                      width: 170,
-                      height: 35,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                            color: Colors
-                                .grey), // Add border color
-                        borderRadius: BorderRadius.circular(
-                            5.0), // Add border radius
-                      ),
-                      child: DropdownButton<int>(
-                        underline: Container(),
-                        value: _selectedIndex,
-                        items: List.generate(
-                          Sno.length,
-                              (index) =>
-                              DropdownMenuItem<int>(
-                                value: index,
-                                child: Text('      S. No.  ${Sno[index]}'),
-                              ),
-                        ),
-                        onChanged: (int? newIndex) {
-                          setState(() {
-                            _selectedIndex = newIndex!;
-                            _controller.animateTo(
-                              _selectedIndex * 400.0, // Adjust 100.0 as needed based on item height
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            );
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 50,),
-                    InkWell(
-                      onTap:
-                        ()
-                        {
-                          setState(() {
-                            // Increment values in Sno list
-                            Sno.add(Sno.length + 1);
-                          });
-                        },
-                      child: Container(
-                        width: 170,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                              color: Colors
-                                  .grey), // Add border color
-                          borderRadius: BorderRadius.circular(
-                              5.0), // Add border radius
-                        ),
-                        child: Center(child: Text('Add New Table',style: TextStyle(fontWeight: FontWeight.bold),))
-
-                      ),
-                    ),
-                  ],
-                )
-              ),
+                    ],
+                  )),
             ),
             Padding(
               padding: const EdgeInsets.all(18.0),
@@ -538,7 +532,8 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                             5.0), // Add border radius
                                       ),
                                       child: DropdownButton<String>(
-                                        icon: Container(), // Set the default icon
+                                        icon:
+                                            Container(), // Set the default icon
                                         hint: const Row(
                                           children: [
                                             Text('   Add  Data'),
@@ -552,17 +547,23 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                         onChanged: (value) {
                                           // Implement the logic when dropdown value changes
                                           if (value == 'Agenda Pt') {
-                                            _addDataInAgenda('(  ${message['speaker']}  )    '+message['text']);
+                                            _addDataInAgenda(
+                                                '(  ${message['speaker']}  )    ' +
+                                                    message['text']);
                                           } else if (value == 'Dscn') {
-                                            _addDataInDscn('(  ${message['speaker']}  )    '+message['text']);
+                                            _addDataInDscn(
+                                                '(  ${message['speaker']}  )    ' +
+                                                    message['text']);
                                           } else if (value == 'Resp') {
-                                            _addDataInResp('(  ${message['speaker']}  )    '+message['text']);
+                                            _addDataInResp(
+                                                '(  ${message['speaker']}  )    ' +
+                                                    message['text']);
                                           } else if (value == 'Info') {
-                                            _addDataInInfo('(  ${message['speaker']}  )    '+message['text']);
+                                            _addDataInInfo(
+                                                '(  ${message['speaker']}  )    ' +
+                                                    message['text']);
                                           }
-                                          setState(() {
-
-                                          });
+                                          setState(() {});
                                         },
                                         items: const [
                                           DropdownMenuItem(
@@ -583,7 +584,6 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                           ),
                                         ],
                                       ),
-
                                     ),
                                     const SizedBox(
                                       width: 5,
@@ -601,13 +601,18 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                     child: Container(
                       height: 620,
                       child: ListView.builder(
-                        controller: _controller,
+                          controller: _controller,
                           shrinkWrap: true,
                           itemCount: Sno.length,
                           itemBuilder: (context, index) {
-
-
-                            return  Padding(
+                            List<String>? agendaList =
+                                allData[index]?['Agenda'];
+                            List<String>? descList =
+                                allData[index]?['Discussion'];
+                            List<String>? respList =
+                                allData[index]?['Responsibility'];
+                            List<String>? infoList = allData[index]?['Info'];
+                            return Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Container(
                                 height: 400,
@@ -616,7 +621,7 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                   children: [
                                     const Padding(
                                       padding:
-                                      EdgeInsets.only(left: 18.0, top: 18),
+                                          EdgeInsets.only(left: 18.0, top: 18),
                                       child: Row(
                                         children: [
                                           SizedBox(
@@ -668,14 +673,14 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                       ),
                                     ),
                                     Padding(
-                                      padding:
-                                      EdgeInsets.symmetric(horizontal: 18.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18.0),
                                       child: Row(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text((index + 1 ).toString()),
-                                          SizedBox(
+                                          Text((index + 1).toString()),
+                                          const SizedBox(
                                             width: 30,
                                           ),
                                           Container(
@@ -684,24 +689,98 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                             width: 1,
                                           ),
                                           Container(
-                                            width: 350, // Set a fixed width for the container
+                                            width:
+                                                350, // Set a fixed width for the container
                                             height: 340,
                                             child: SingleChildScrollView(
                                               child: SizedBox(
-                                                width: 350,
-                                                child: TextFormField(
-                                                  controller: TextEditingController(text: getDataForIndexAndCategory(index, 'Agenda')),
-                                                  maxLines: null, // Set to null for unlimited lines, or any desired number
-                                                  keyboardType: TextInputType.multiline,
-                                                  textInputAction: TextInputAction.newline,
-                                                  decoration: const InputDecoration(
-                                                    border: InputBorder.none, // Remove underline
+                                                  height: 400,
+                                                  width: 350,
+                                                  child: ListView.builder(
+                                                      itemCount:
+                                                          agendaList?.length ?? 0,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        print('object  :- ${agendaList?.length}');
+                                                        print('object index :- $index');
+                                                        // String? data = getDataForIndexAndCategory(_selectedIndex, 'Agenda');
+                                                        return SizedBox(
+                                                            width: 350,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(
+                                                                      8.0),
+                                                              child: TextFormField(
+                                                                  decoration: InputDecoration(
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(10.0),
+                                                                      borderSide:
+                                                                          BorderSide.none, // Removes default border
+                                                                    ),
+                                                                    filled:
+                                                                        true,
+                                                                    fillColor:
+                                                                        Colors.grey[200],
+                                                                    focusedBorder:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(10.0),
+                                                                      borderSide:
+                                                                          const BorderSide(
+                                                                        color:
+                                                                            Colors.blue,
+                                                                        width:
+                                                                            2.0,
+                                                                      ), // Customize underline color when focused
+                                                                    ),
+                                                                    enabledBorder:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(10.0),
+                                                                      borderSide:
+                                                                          const BorderSide(
+                                                                        color:
+                                                                            Colors.grey,
+                                                                        width:
+                                                                            1.0,
+                                                                      ), // Customize underline color when not focused
+                                                                    ),
+                                                                  ),
+                                                                  minLines: 1,
+                                                                  maxLines: null,
+                                                                  initialValue: agendaList?[index],
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    agendaList?[index] = value;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ));
+                                                      })
+                                                  // TextFormField(
+                                                  //   controller: TextEditingController(
+                                                  //       text:
+                                                  //           getDataForIndexAndCategory(
+                                                  //               index, 'Agenda')),
+                                                  //   maxLines:
+                                                  //       null, // Set to null for unlimited lines, or any desired number
+                                                  //   keyboardType:
+                                                  //       TextInputType.multiline,
+                                                  //   textInputAction:
+                                                  //       TextInputAction.newline,
+                                                  //   decoration:
+                                                  //       const InputDecoration(
+                                                  //     border: InputBorder
+                                                  //         .none, // Remove underline
+                                                  //   ),
+                                                  //
+                                                  // ),
                                                   ),
-                                                ),
-                                              ),
                                             ),
                                           ),
-
                                           Container(
                                             height: 340,
                                             color: Colors.black,
@@ -711,22 +790,113 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                             width: 300,
                                             height: 340,
                                             child: SingleChildScrollView(
-                                              child: SizedBox(
-                                                width: 300,
-                                                child: TextField(
-                                                  controller: TextEditingController(text: getDataForIndexAndCategory(index, 'Discussion')),
-                                                  maxLines:
-                                                  null, // Set to null for unlimited lines, or any desired number
-                                                  keyboardType:
-                                                  TextInputType.multiline,
-                                                  textInputAction:
-                                                  TextInputAction.newline,
-                                                  decoration: InputDecoration(
-                                                    border: InputBorder
-                                                        .none, // Remove underline
-                                                  ),
-                                                ),
+                                              child:SizedBox(
+                                                  height: 400,
+                                                  width: 350,
+                                                  child: ListView.builder(
+                                                      itemCount:
+                                                      descList?.length ?? 0,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        print('object  :- ${agendaList?.length}');
+                                                        print('object index :- $index');
+                                                        // String? data = getDataForIndexAndCategory(_selectedIndex, 'Agenda');
+                                                        return SizedBox(
+                                                            width: 350,
+                                                            child: Padding(
+                                                              padding:
+                                                              const EdgeInsets
+                                                                  .all(
+                                                                  8.0),
+                                                              child: TextFormField(
+                                                                decoration: InputDecoration(
+                                                                  border:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    BorderSide.none, // Removes default border
+                                                                  ),
+                                                                  filled:
+                                                                  true,
+                                                                  fillColor:
+                                                                  Colors.grey[200],
+                                                                  focusedBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.blue,
+                                                                      width:
+                                                                      2.0,
+                                                                    ), // Customize underline color when focused
+                                                                  ),
+                                                                  enabledBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.grey,
+                                                                      width:
+                                                                      1.0,
+                                                                    ), // Customize underline color when not focused
+                                                                  ),
+                                                                ),
+                                                                minLines: 1,
+                                                                maxLines: null,
+                                                                initialValue: descList?[index],
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    descList?[index] = value;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ));
+                                                      })
+                                                // TextFormField(
+                                                //   controller: TextEditingController(
+                                                //       text:
+                                                //           getDataForIndexAndCategory(
+                                                //               index, 'Agenda')),
+                                                //   maxLines:
+                                                //       null, // Set to null for unlimited lines, or any desired number
+                                                //   keyboardType:
+                                                //       TextInputType.multiline,
+                                                //   textInputAction:
+                                                //       TextInputAction.newline,
+                                                //   decoration:
+                                                //       const InputDecoration(
+                                                //     border: InputBorder
+                                                //         .none, // Remove underline
+                                                //   ),
+                                                //
+                                                // ),
                                               ),
+
+                                              // SizedBox(
+                                              //   width: 300,
+                                              //   child: TextField(
+                                              //     controller: TextEditingController(
+                                              //         text:
+                                              //             getDataForIndexAndCategory(
+                                              //                 index,
+                                              //                 'Discussion')),
+                                              //     maxLines:
+                                              //         null, // Set to null for unlimited lines, or any desired number
+                                              //     keyboardType:
+                                              //         TextInputType.multiline,
+                                              //     textInputAction:
+                                              //         TextInputAction.newline,
+                                              //     decoration: InputDecoration(
+                                              //       border: InputBorder
+                                              //           .none, // Remove underline
+                                              //     ),
+                                              //   ),
+                                              // ),
                                             ),
                                           ),
                                           Container(
@@ -737,23 +907,113 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                           Container(
                                             width: 215,
                                             height: 340,
-                                            child: SingleChildScrollView (
-                                              child: SizedBox(
-                                                width: 215,
-                                                child: TextField(
-                                                  controller: TextEditingController(text: getDataForIndexAndCategory(index, 'Responsibility')),
-                                                  maxLines:
-                                                  null, // Set to null for unlimited lines, or any desired number
-                                                  keyboardType:
-                                                  TextInputType.multiline,
-                                                  textInputAction:
-                                                  TextInputAction.newline,
-                                                  decoration: InputDecoration(
-                                                    border: InputBorder
-                                                        .none, // Remove underline
-                                                  ),
-                                                ),
+                                            child: SingleChildScrollView(
+                                              child:SizedBox(
+                                                  height: 400,
+                                                  width: 350,
+                                                  child: ListView.builder(
+                                                      itemCount:
+                                                      respList?.length ?? 0,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        print('object  :- ${agendaList?.length}');
+                                                        print('object index :- $index');
+                                                        // String? data = getDataForIndexAndCategory(_selectedIndex, 'Agenda');
+                                                        return SizedBox(
+                                                            width: 350,
+                                                            child: Padding(
+                                                              padding:
+                                                              const EdgeInsets
+                                                                  .all(
+                                                                  8.0),
+                                                              child: TextFormField(
+                                                                decoration: InputDecoration(
+                                                                  border:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    BorderSide.none, // Removes default border
+                                                                  ),
+                                                                  filled:
+                                                                  true,
+                                                                  fillColor:
+                                                                  Colors.grey[200],
+                                                                  focusedBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.blue,
+                                                                      width:
+                                                                      2.0,
+                                                                    ), // Customize underline color when focused
+                                                                  ),
+                                                                  enabledBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.grey,
+                                                                      width:
+                                                                      1.0,
+                                                                    ), // Customize underline color when not focused
+                                                                  ),
+                                                                ),
+                                                                minLines: 1,
+                                                                maxLines: null,
+                                                                initialValue: respList?[index],
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    respList?[index] = value;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ));
+                                                      })
+                                                // TextFormField(
+                                                //   controller: TextEditingController(
+                                                //       text:
+                                                //           getDataForIndexAndCategory(
+                                                //               index, 'Agenda')),
+                                                //   maxLines:
+                                                //       null, // Set to null for unlimited lines, or any desired number
+                                                //   keyboardType:
+                                                //       TextInputType.multiline,
+                                                //   textInputAction:
+                                                //       TextInputAction.newline,
+                                                //   decoration:
+                                                //       const InputDecoration(
+                                                //     border: InputBorder
+                                                //         .none, // Remove underline
+                                                //   ),
+                                                //
+                                                // ),
                                               ),
+                                              // SizedBox(
+                                              //   width: 215,
+                                              //   child: TextField(
+                                              //     controller: TextEditingController(
+                                              //         text:
+                                              //             getDataForIndexAndCategory(
+                                              //                 index,
+                                              //                 'Responsibility')),
+                                              //     maxLines:
+                                              //         null, // Set to null for unlimited lines, or any desired number
+                                              //     keyboardType:
+                                              //         TextInputType.multiline,
+                                              //     textInputAction:
+                                              //         TextInputAction.newline,
+                                              //     decoration: InputDecoration(
+                                              //       border: InputBorder
+                                              //           .none, // Remove underline
+                                              //     ),
+                                              //   ),
+                                              // ),
                                             ),
                                           ),
                                           Container(
@@ -766,22 +1026,111 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                                             height: 340,
                                             child: SingleChildScrollView(
                                               child: SizedBox(
-                                                width: 100,
-                                                child: TextField(
-                                                  controller: TextEditingController(text: getDataForIndexAndCategory(index, 'Info')),
-                                                  maxLines:
-                                                  null, // Set to null for unlimited lines, or any desired number
-                                                  keyboardType:
-                                                  TextInputType.multiline,
-                                                  textInputAction:
-                                                  TextInputAction.newline,
-                                                  decoration:
-                                                  const InputDecoration(
-                                                    border: InputBorder
-                                                        .none, // Remove underline
-                                                  ),
-                                                ),
+                                                  height: 400,
+                                                  width: 350,
+                                                  child: ListView.builder(
+                                                      itemCount:
+                                                      infoList?.length ?? 0,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        print('object  :- ${infoList?.length}');
+                                                        print('object index :- $index');
+                                                        // String? data = getDataForIndexAndCategory(_selectedIndex, 'Agenda');
+                                                        return SizedBox(
+                                                            width: 350,
+                                                            child: Padding(
+                                                              padding:
+                                                              const EdgeInsets
+                                                                  .all(
+                                                                  8.0),
+                                                              child: TextFormField(
+                                                                decoration: InputDecoration(
+                                                                  border:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    BorderSide.none, // Removes default border
+                                                                  ),
+                                                                  filled:
+                                                                  true,
+                                                                  fillColor:
+                                                                  Colors.grey[200],
+                                                                  focusedBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.blue,
+                                                                      width:
+                                                                      2.0,
+                                                                    ), // Customize underline color when focused
+                                                                  ),
+                                                                  enabledBorder:
+                                                                  OutlineInputBorder(
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(10.0),
+                                                                    borderSide:
+                                                                    const BorderSide(
+                                                                      color:
+                                                                      Colors.grey,
+                                                                      width:
+                                                                      1.0,
+                                                                    ), // Customize underline color when not focused
+                                                                  ),
+                                                                ),
+                                                                minLines: 1,
+                                                                maxLines: null,
+                                                                initialValue: infoList?[index],
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    infoList?[index] = value;
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ));
+                                                      })
+                                                // TextFormField(
+                                                //   controller: TextEditingController(
+                                                //       text:
+                                                //           getDataForIndexAndCategory(
+                                                //               index, 'Agenda')),
+                                                //   maxLines:
+                                                //       null, // Set to null for unlimited lines, or any desired number
+                                                //   keyboardType:
+                                                //       TextInputType.multiline,
+                                                //   textInputAction:
+                                                //       TextInputAction.newline,
+                                                //   decoration:
+                                                //       const InputDecoration(
+                                                //     border: InputBorder
+                                                //         .none, // Remove underline
+                                                //   ),
+                                                //
+                                                // ),
                                               ),
+                                              // child: SizedBox(
+                                              //   width: 100,
+                                              //   child: TextField(
+                                              //     controller: TextEditingController(
+                                              //         text:
+                                              //             getDataForIndexAndCategory(
+                                              //                 index, 'Info')),
+                                              //     maxLines:
+                                              //         null, // Set to null for unlimited lines, or any desired number
+                                              //     keyboardType:
+                                              //         TextInputType.multiline,
+                                              //     textInputAction:
+                                              //         TextInputAction.newline,
+                                              //     decoration:
+                                              //         const InputDecoration(
+                                              //       border: InputBorder
+                                              //           .none, // Remove underline
+                                              //     ),
+                                              //   ),
+                                              // ),
                                             ),
                                           ),
                                         ],
@@ -792,13 +1141,15 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
                               ),
                             );
                           }),
-
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(
+            // ElevatedButton(onPressed: (){
+            //   print(allData);
+            // }, child: Text('check')),
+            const SizedBox(
               height: 100,
             )
           ],
@@ -828,7 +1179,6 @@ class _Create_MOM_ScreenState extends State<Create_MOM_Screen> {
       }
       return memberSpans;
     } catch (e) {
-
       return []; // Return empty list if there's an error decoding the JSON string
     }
   }

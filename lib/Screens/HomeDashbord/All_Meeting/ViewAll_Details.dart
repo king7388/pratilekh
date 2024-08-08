@@ -137,19 +137,19 @@ class _Meeting_DetailsScreenState extends State<Meeting_DetailsScreen> {
     Map<String, dynamic> jsonData,
     String p2,
     String p3,
-  ) async {
+  ) async
+  {
     // Extract messages from JSON data
     List<dynamic> messages = jsonData['messages'];
     if (p3 == '1') {
       List<String> allMessages = [];
-
       // Combine all messages into a single list
       for (var message in messages) {
         if (message['speaker'] != null &&
             message['text'] != null &&
-            message['time'] != null) {
+            message['start_time'] != null) {
           String messageText =
-              '${message['speaker']} (${message['time']}): ${message['text']}';
+              '${message['speaker']} (${message['start_time']}): ${message['text']}';
           allMessages.add(messageText);
         }
       }
@@ -258,7 +258,7 @@ class _Meeting_DetailsScreenState extends State<Meeting_DetailsScreen> {
       for (var message in messages) {
         if (message['speaker'] != null &&
             message['text'] != null &&
-            message['time'] != null) {
+            message['start_time'] != null) {
           String speaker = message['speaker'];
           String text = message['text'];
 
@@ -267,7 +267,7 @@ class _Meeting_DetailsScreenState extends State<Meeting_DetailsScreen> {
             speakerMessages[speaker] = [];
           }
           speakerMessages[speaker]!.add(
-              '${message['speaker']} (${message['time']}): ${message['text']}');
+              '${message['speaker']} (${message['start_time']}): ${message['text']}');
         }
       }
 
@@ -2164,7 +2164,7 @@ print(response.body);
               children: [
                 for (var message in data['messages'])
                   ListTile(
-                    title: Text('${message['speaker']} (${message['time']})'),
+                    title: Text('${message['speaker']} (${message['start_time']})'),
                     subtitle: Text(message['text']),
                   ),
               ],
@@ -2296,7 +2296,7 @@ print(response.body);
                       ),
                       for (var message in speakerMessages[speaker]!)
                         ListTile(
-                          title: Text('${message['time']}'),
+                          title: Text('${message['start_time']}'),
                           subtitle: Text(message['text']),
                         ),
                     ],
