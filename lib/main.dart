@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
-//import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite_ffi;
-import 'Api_repo/Api_provider.dart';
+
 import 'DataBase_Backend/Helpers/Helper.dart';
 import 'Screens/HomeDashbord/Dashbord_Screen.dart';
-import 'Screens/HomeDashbord/Voice_Transcretion_Screen/Live_Transcreption_Page.dart';
-import 'SplashScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,10 +14,9 @@ Future<void> main() async {
   // Must add this line.
   await windowManager.ensureInitialized();
 
-  WindowOptions windowOptions =  WindowOptions(
+  WindowOptions windowOptions = WindowOptions(
     size: Size(1800, 1000),
     center: true,
-
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
@@ -63,7 +59,7 @@ class MyApp extends StatelessWidget {
   Widget buildPage(String name) {
     switch (name) {
       case '/':
-        return  ResponsiveBreakpoints(
+        return ResponsiveBreakpoints(
           breakpoints: [
             Breakpoint(start: 0, end: 450, name: MOBILE),
             Breakpoint(start: 451, end: 800, name: TABLET),
@@ -71,11 +67,10 @@ class MyApp extends StatelessWidget {
             Breakpoint(start: 1921, end: double.infinity, name: '4K'),
           ],
           //child: Livetrans(),
-          child: SplashScreen(),
+          child: DashBoard_Screen(),
         );
       default:
         return const SizedBox.shrink();
     }
   }
 }
-
