@@ -22,6 +22,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     fetchDatafirsttime();
+    print('Initial backend check started...');
+    print('Backend status: ${responseData}');
+
   }
 
   void _startTimer() {

@@ -5,6 +5,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'DataBase_Backend/Helpers/Helper.dart';
 import 'Screens/HomeDashbord/Dashbord_Screen.dart';
+import 'SplashScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,7 +68,7 @@ class MyApp extends StatelessWidget {
             Breakpoint(start: 1921, end: double.infinity, name: '4K'),
           ],
           //child: Livetrans(),
-          child: DashBoard_Screen(),
+          child: SplashScreen(),
         );
       default:
         return const SizedBox.shrink();
