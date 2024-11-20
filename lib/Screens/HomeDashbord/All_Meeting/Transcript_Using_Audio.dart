@@ -229,6 +229,10 @@ class _Voice_Transcreption_For_AudioState
 
         // Read response from stream
         var response = await http.Response.fromStream(streamedResponse);
+        print('Response Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+
+
         if (response.statusCode == 200) {
           Utils.isloading = false;
 

@@ -102,11 +102,11 @@ var folderpath;
 
   String? memebersname;
   List<String> sampletext = [
-    'The quick brown fox jumps over the lazy dog, capturing everyone attention with its swift and graceful movements.',
-    'She sells seashells by the seashore, collecting beautiful treasures from the sandy beach as the waves crash gently.',
-    'Bright stars twinkled in the clear night sky, casting a serene glow over the tranquil countryside and its sleeping inhabitants.',
-    'A curious cat climbed the tall tree, navigating the branches skillfully, while birds chirped melodiously from their nests.',
-    'In the middle of the bustling city, a quiet park offered a peaceful escape, where people could relax and enjoy nature.',
+    'The Indian Army is one of the largest and most powerful military forces in the world. It plays a vital role in protecting the country borders and sovereignty',
+    'The army uses advanced technology like drones and satellite imagery to keep an eye on border areas and detect any unauthorized movements or intruders.',
+    'The army conducts regular patrols along the borders and maintains a network of outposts and bunkers to ensure constant vigilance against intruders.',
+    'By employing a combination of technology, training, and teamwork, the Indian Army ensures the safety and security of the nation’s borders',
+    'The army primary focus is on maintaining the country territorial integrity and preventing any unauthorized access, keeping the nation safe from external threats.',
   ];
   List<bool> showPlayer = [true, true, true, true, true];
 

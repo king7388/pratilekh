@@ -167,7 +167,7 @@ class _DashBoard_ScreenState extends State<DashBoard_Screen> {
                             maxWidth: 80,
                           ),
                           child: Image.asset(
-                            'assets/images/army.png',
+                            'assets/images/img.png',
                           ),
                         ),
                       ),
