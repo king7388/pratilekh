@@ -607,9 +607,9 @@ class _Add_Meeting_ScreenState extends State<Add_Meeting_Screen> {
                             String title = Meetingtitle.text;
                             String meeting_held = meetingheld.text;
                             String codeNo = Codeno.text;
-                            if (title.isEmpty || codeNo.isEmpty) {
+                            if (title.isEmpty || codeNo.isEmpty|| addedMembersList.isEmpty) {
                               showDeleteConfirmationDialog(
-                                  context, 'Title and CodeNo cannot be empty','Alert');
+                                  context, 'Title, CodeNo and Member List cannot be empty','Alert');
                               // ScaffoldMessenger.of(context).showSnackBar(
                               //   const SnackBar(
                               //     content: Text('Title and CodeNo cannot be empty'),
